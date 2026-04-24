@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Mécanisme d'Ajustement — RTE</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+
+  :root {
+    --bg: #0a0e14;
+    --surface: #111620;
+    --surface2: #1a2030;
+    --border: #1e2a3a;
+    --accent: #00c8ff;
+    --accent2: #ff4060;
+    --accent3: #00e5a0;
+    --text: #c8d8e8;
+    --text-dim: #5a7090;
+    --green: #00e5a0;
+    --red: #ff4060;
+    --yellow: #ffc040;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    padding: 24px 32px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+  }
+
+  .logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: rgba(0,200,255,0.08);
+    border: 1px solid rgba(0,200,255,0.3);
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+
+  header .subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* SETUP PANEL */
+  .setup-panel {
+    margin: 24px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+  }
+
+  .setup-panel h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+  }
+
+  .field input[type="password"] {
+    letter-spacing: 0.1em;
+  }
+
+  .btn-fetch {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    height: 36px;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .btn-fetch:hover { background: #33d4ff; }
+  .btn-fetch:active { transform: scale(0.98); }
+  .btn-fetch:disabled { background: var(--text-dim); cursor: not-allowed; }
+
+  /* STATUS */
+  .status-bar {
+    margin: 0 32px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    min-height: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-bar.loading { color: var(--yellow); }
+  .status-bar.ok { color: var(--green); }
+  .status-bar.error { color: var(--red); }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .dot.blink { animation: blink 1s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* KPI STRIP */
+  .kpi-strip {
+    margin: 0 32px 24px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+  }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--kpi-color, var(--accent));
+  }
+
+  .kpi .kpi-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .kpi .kpi-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--kpi-color, var(--accent));
+    line-height: 1;
+  }
+
+  .kpi .kpi-unit {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* CHARTS GRID */
+  .charts-grid {
+    margin: 0 32px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+  }
+
+  .chart-card.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .chart-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+  }
+
+  .chart-canvas-wrap {
+    position: relative;
+    height: 200px;
+  }
+
+  /* ANALYSIS TABLE */
+  .analysis-section {
+    margin: 0 32px 24px;
+  }
+
+  .section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+  }
+
+  th {
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid rgba(30,42,58,0.5);
+    color: var(--text);
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .tag-orion {
+    background: rgba(255,140,0,0.15);
+    color: #ff8c00;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 10px;
+    border: 1px solid rgba(255,140,0,0.3);
+  }
+
+  .tag-gray {
+    background: rgba(255,220,0,0.10);
+    color: #ffdc00;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 10px;
+    border: 1px solid rgba(255,220,0,0.3);
+  }
+
+  .tag-cong {
+    background: rgba(0,140,255,0.12);
+    color: #008cff;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 10px;
+    border: 1px solid rgba(0,140,255,0.3);
+  }
+
+  .tag-oui {
+    background: rgba(0,229,160,0.12);
+    color: var(--green);
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 10px;
+  }
+
+  .tag-non {
+    background: rgba(90,112,144,0.12);
+    color: var(--text-dim);
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 10px;
+  }
+
+  .tag-fort {
+    background: rgba(255,64,96,0.12);
+    color: var(--red);
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 10px;
+  }
+
+  .price-neg { color: var(--red); }
+  .price-pos { color: var(--green); }
+
+  /* PLACEHOLDER */
+  .placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+  }
+
+  /* FOOTER */
+  footer {
+    margin: 0 32px 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAB4AHgDASIAAhEBAxEB/8QAHAABAAIDAQEBAAAAAAAAAAAAAAYHBAUIAwIB/8QASRAAAQMDAgMEBAgKBwkAAAAAAQIDBAAFEQYSByExCBNBURQiYXEVFiMyQlKBkRgzOFZigpOx0dIXJHJ2obLwJTQ2dZWWs8Lx/8QAGwEAAgIDAQAAAAAAAAAAAAAAAAMCBAEFBgf/xAAyEQABAwIFAgUDAwQDAAAAAAABAAIDBBESITFRYRNBBSJxgZEUMrEGQsEjgpLxoeHw/9oADAMBAAIRAxEAPwDsulKUISlKUIXhcJsS3w3Jk6Q1HjtjK3HFbUp54616suNvNJdaWlxtYCkqSchQPQg+NeU+HFnw3YcxhD8d1O1baxkKFRLTFhvumL8IMF9MzTb25QS858pEV1AT9YE/6B61ZZpY5WjDdhyuNQeRtz29FchghlhccdnjOx0I4O/HftmpoagPBhalwL7uWVf7Wd6nPgKyNWcSbHY5K4bSXLhLbOFoZICEHyUo8s+wZqLWzizBiOOIRpdEZl1wuL9HeTkqPVRG0An7a1NX4pQsqoy6UXbe4sTryMluaLwjxB9HI1kJIfhINwNM9Cb5q36xV3GAi5ItqpjAmLQXEsFY3lI6nHXFR5OqTqDTciRo4sSLinCe5kq2KZycblA9cDmPA4r70XpFqyrcuVwfNwvUnnIlr54z1SjPQfv9g5VshVule0QDE05l3a3G5/Hdas0TYY3mpOFwyDe99zsPz2UopSlXlrkpSlCEpSlCEpSlCEpSlCFAeNOt5OirRb5EFtp2VJlhPduj1VNpGV+76Iz4ZqLXfjZZ7lo+amAiZAu6msBtaMhIJwpSVjkcDOM4OcVGu1PMU7qy1wsktx4ZXj9Ja+f+CRVROIcYXtWNpUgH3pUMg/dXD+K+MVMdTLFGfLp6ZajlepeA/puiqKGCaZvn+71zyB3FrKSxLtFkK2kraP6fT7/41n1DIz78Z5L0d1bTieikn/Wanek34Wpym2JQzAvhHyAT6seaR9EDo255Y9VXkk9eWbS9TJhz239OeF11S7oDGR5e525PHPbvlmthoy7yLHqWFPYWQA6lDqQeS21EBST+/wB4FdF3S/WW1PpYuV0hxHVJ3JQ66EqIzjOD4VR2idEXu4ajjom22TEiR3UrkOPtlAwk52jPUnGOXvq9bhZrTcXUuz7ZDlOJG0LeZSsgeWSOldj+mYquOmksLZi2K/v/AAvOP1bNRSVcdzewN8Nr8cbrytmobHc5JjW+7QpT20q7tp4KVgdTitnWBAstnt75fg2uFGdI272mEpVjyyBWfXVw9XD/AFbX4/7XGT9HH/Rvbm1/+EpSlNSUpSlCEpSlCEpSlCFzp2jba7J1mHEfP9FbUgHlkesCPvFQy1WhepNNOwGGlC/WdKnGWSMKlxCcqQkeK21EkDxSojwFXnx0069Pt0e9xGlOOQgUPpSMnujz3fqn/Anyqm4Ul+HMZmRHlMyGVbmnEH1knzFea+Kg0niEglbdrs/Y7eh/Gy9g8BqfqvC4xEbOZl6Eb8EfnLNQGvtl11h5D8dakPNKC21JPNKgcgj25Aqypmmfj2ZMy0tMR9RNpLr8ZOENTk+K0eCHMkZHzVZzyOa33Bbh1ZX7uJ18ubMi4wlhRs5QptxlY5gupWATg9MDafM0ql8OlqJGiI+U6HT/AMRt/Ga2lV45T00D3zfc3Vup/wBHsdPfJXPc036ZpVC7XIah3ZTLbmXGwpO7AKkkHpnmM+FYGi9Wi7POWi6xzb75GHy0ZfILx9JHmPHH7xzqVVjqhQ1TkTlRWDKQgoS8WxvSk9QFdcV6I+CXqtkY/gg6Efwee/deMsqITE6ORnIIyIOx3HHbssilKVbVFKUpQhKUpQhKUpQhKUpQhCARg8xUOu3DXSlwlKkmG7FWo5UIzpQkn+z0H2YqY0pFRSw1AwytDhyFZpqyeldiheWng2Wn03piyaebULXBQ0tYwt1RKlq96jzx7OlfGqNK2PUaEfCcIKfa/EyWlFt9k/oOJwoe7pW7pWRTQtj6QaMO1slj6yfq9bGce9zf5UT0lpS62K7OyH9Y3e7QS0UNRJu1ew5HrFfUkYx4dallKVKKJsTcLdPn8rFRUSVD8cmvoB+AEpSlMSEpSlCEpSlCFF+ImvtLaBtSbhqa5oipcJDDKQVvPkdQhA5n2noPEiqRndrnT7cwtw9H3V6Pnk47KabWR57ef76qfT8W4cf+Prpusx9mA4XHl7D60eE2QEtN55AnKRnzUpXOuvLLws4dWm1i2xNGWQsbdqi9DQ8tftUtYKifaTV10cUIAeLlVg+STNuQWi4W8ctDa+lotsOS/bbssepBnJCFuefdqBKV+4HPsrf8XdewuHOkTqOfAkzmRIbY7qOpIVlZOD6xAxyrmftXcJbToT4P1lpBK7dCflhh6M0sgR3sFaHGjnKQdp5eBAIxW74r6ula27HlpvtwUFTzcWI8tQGN7rTi0FX62Ar7aOgxxa5uhKOq4AtdqFvPwt9M/mjfP2rP81Pwt9MfmjfP2rP81VxwH1XwVsuh1Q+IFkiTbx6Y6sOO2kyD3R27RvwfI8vCp9/SD2XvzWt//bp/lproY2m2AqDZHkXxBWJwj47aR4iXdVlisTrZddinGo8tKcPJSMq2KSSCQOZBwcc+eDWLI482Vni6OHJsNyMw3FMD0oLb7rcoA7sZ3Y5+Vc4cDHIE3tTW+TYmO7tjl0mOxEIb2BDHdulPq/RASRy8K2Ny/LYT/elr/KmsGmjDyOLoEzi0Hmy7O1De7Tp6zv3e93CPb4DCdzr769qU+XvJ8AOZ8KoXUfay0jClqas2nrrdGUnHfuLRGQr2pCsqx7wKrrtW3686040w+HsB0iNCejxI7JJCFyngklxXngLSkeQCsda6G4e8FOH+kbQ1GFgg3WbsAkTp8dLzjqvEgKBCB5JT0Hn1pQjjjYHSZk9kzG97iGZWUX0H2mtB6hmtQbs1M06+6oJQ5M2qjknoC4k+r71AD21cV9ujNq09PvKkKfZhxHJRS2RlaUIKsA9OYFUN2luCGlntFXPVel7XHtF0trKpTrUVAQzJaSMrBQOQUE5IIx0wc55aDs2aznXvgZrjS9xfU+bJa3jEWs5UI7jLmEZ8kqScewgeFDoo3txx+4QJHNdhctqntcaYKQfijfOYz+NZ/mr9/C30z+aN8/as/wA1V12LNM6e1NqO/wAfUNlgXVpiAwtpEthLgQorUCQD0OK6i/oo4afmHp3/AKe3/CpyiCN2EtKjGZXtuCq+0N2m9Gaj1FEssq13W0OTHUssvyO7W1vUcJCilWU5OBnGMnnilUL2gLParD2iUW2y26LboTblvUhiM2G0JKikkgDlzNKy+mYQHNyuhszgSCvpJvHZ748qkPQXZNuCnEtfREyC4eqFdN6cJ5eCk4PI5rqO0cduFVxtiZw1hAieruWxLy08g+RQRkn3ZqXa00jpzWVpNr1LaY9xjZ3IDgwptX1kKGFJPtBFU5M7KWgHZXeRrxqKMyTnuUyG1gewFSCfvzSzLFMAZMipBj4/szCqvtL8WmOJ0626P0ZGlTLc1LC0rDRDk6QQUoS2g89oCj1wST0AHOW8ZNHvaF7Ilq07LKTNauEd6WUnI75xa1rAPiATtz44q6OGvCHQvD930qxWoruBSUmdLX3z+D1AJ5JH9kDNbbiboezcQdMnT19cmNxC+h/MVwIXuRnHMg8uflWfqGAta0eUFY6TiCXalco8JeCEDiTwXcvVumGBqNi4yGm3HFFTD6EhO1C0/R6nCk8xnmDUJ09Ds+gdaPWDi1oN2YzuHeFL7jb7Kc47xooUEOoP/wAOeVdx8MNC2Xh5po2CxOzHIhkLkEynQte5eM8wBy5Dwr94jaC0xr+y/BepIAfSk7mH2zseYV9ZC+o9o6HxBqQrPMQftPysfT+UEarQ8HNJ8KYVuTqbh1brepuW2W/TG3FuuY6lBKyVIPTKeXtFcz3L8thP96Wv8qa6O4c8E9OaAvPwnpu/alYK+T8dyYhbEgeS0d3z9hGCPA1+vcD9HO8TRxCVJvHwuJyZ2wSU9z3iQABt2Z28umagyVrHONybhSdG5wAtaxVDdrfS170lxVicSbWhXokt1h5MgJymPMaCQEq8goISR5+sKujh/wBobh5qKzsu3a8R9P3IJHpEWaooSFeOxeNqk+XPPmBVrXW3wbrbn7dc4jEyG+jY8w+gLQtPkQeRqldQdl3hzcZa5FvfvNnCjksxpKVtD3BxKiPvrAljkYGyajugsexxLO6i3aP4/aamaPn6T0XNFzkXFosSpzaSGGGTyWEqON6iMjlyAJOc8q/ezzoS4aZ4Eaz1Fdo640m+2t5TDLicKRHQw5sUR4bipRx5bfOrB0L2eeHGlZ7VwMGTeZjRCm3Lm6HUoUPENgBGfaQcVaF6t7F2s021SitLE2O5HdKDhQStJScHzwaHTMa3BHp3Q2NxdieuS+wP/wAV6l/5dH/8iq6/qu+E3B7SnDSfNm6ekXV12ayhl0TJCXAEpJIxhIwedWJS6iQSSFzVOFhYyxXD3ae/Kc/Wtv8A60rpHXHA3RusNb/G+6ybwi4ZZO2PJSlr5LG31Sgnw586VZFSzA0bBJ6LsRKnt7t02eWjEvUy27M7gwhtW/OMZ3pPT2edeVntNwhSy9K1DPuDe0p7p5toJzy5+qkHP8a9b3aBdC0TcrnD7vP+6SC1uzj52Bz6V5WexC2yzIF3vEvKSnu5UsuI5454I68q0ToyZ8WE+uI2+NFumytFPhxj0wi/+VrqP6R1Y85qO42O67kp9Pfbt8hXzXNqslrP1kgjHmPdWzn3Ga3xFttsQ+RDet7zrjWBhSkqABz18a01gssW/WnUkGSVNq+HZC2XkclsuDbtWk+YNYNhnXKTxNt0K8s7LjAt77Ly0jCHwVJKXE+xQ+45rUx1EzI42vP3OFj/AHZtPtpuPTPdSUsD5ZXxgAtabj+3Jw99djn3y2lmbvd8ul9Pxlnw24lycjtNMtNFISAkjmpJPjUksttnQXHVS73MuIWAEpfQ2kI9o2JHX21EdM2Ju6XfUry7ldopTd3U7YktTST6qTkgdTz61LrHZ0WoulE+5S+9259Lkqd24z0z061a8Pa91nuB1OeI7ntoqfiT423ja4aNywDYfu1UW0oxf79AkTl6ruEYiY+0lttlkpCUOFI6pz0FbSwXqZFuN3tF9lNPqtjSJHpiUbN7KgT66RyChg9ORqI2OJqhOlZtwsF4fT3dxklUJLDZK0h1W7YpQJ3eIB5eFSG1Wi2XbQ10XZ5r8uRd2FpelyVZdU5tICV/V2nltHIVUpJZCGYA7Fa5u64cLHQXPe21vfO/XQxAydQtwYsIwtsWm41Nh+2/cg+1x6W74x6qYFy+EnbFa3fWisx20mQ4jwWtSgQnPUADpX1Oi6o08yqfCuj9+itDc9DlNp74oHUtrSBlWPAjnWfoS8xrjZGIv4ifCbSxLir5OMrSADkeRxkGtTqZ+9WKCuVJ1e2XFHEeOm2oLjyz81CRuySelWHYBTifE4ki5cHaH0JA9rcEKo0yGqNPha0A2DS29x6hpOn7r37grP1VeX02uxTba84yibcozatyMKLa85SQRy/fXhfXLrM15Hs0S8yrdHNtVIV3DbaipYc2/SSfA1h6m+E/i1pY3lSFXA3eIqRtSAAolRxgeXT7K+r/AG5Nz4oRo65U2KBZ1L3xXy0v8cBgkeHPp7qhPLI8nXMsyuRrrppyp08UTADlkJM7B2mhzGfC3lus10jTWn39T3KW2g5Uy40yEr5dCUoB+41rJE24XnWVwsLV3ctUeA00rawlPfyCsZKgVA4SOnIda2dr041AnNy03e9yCjPycictxs5GOaT1rxuUHS2prk/CkttvXG34CykqaeZ3cxhQwce4kVafE/ptaPKb6Fx82Wl9RvltsSqkc0fVc53mGHUMHlzGeHQ7XO+WYC9INtv1uurBbvK7lblgh9uaEh1vlyUhSEjPPqD99K0V4auOkJNukQL3NnRZMxuMqBNX3qlBZxltZ9YEdfGlTpqhkZdG4EEdiS7XY55evwl1VNJIGytIIPcAN03GWfIv6qU3ux2+8FozkyCWs7O6kuNdcZzsIz08a8rPpu12mWZUNMoOFBR8pLdcGDjwUojwpSrhpoS/qFoxb2zVIVU4j6QecO1zb4WdbrdDt/pHobIa9JfVId9Ync4rqrn7q/H7dEeuce5LZHpUdC0NuDkdquqT5jkDSlT6bLBtskvqvxF1zc/6/C1UnRmnZMx+W7Bc76Q4XHVIlOo3KPU4SoCs2y2C12dx1dvYdbU6AF75DjmQOnzlHHXwpSlNpIGOxtYAd7C6a+tqXswOkcRtc2WRarbCtcZUeCwGWlOLdKQonKlHKjzPia+LfaLdb5kuXCjhh2Yve/tUdq1fW25wD7QOdKUwRRi1mjLTj0SzNIcV3Hza56+u6xr3pmx3l9Mifb23JCRhLyFFtwDy3JINfFn0rYbTK9Lh29Ak4x37q1OuD3KWSR9lKVA0sBf1MAxb2F/lMFZUCPpdQ4drm3wthcrdDuKWEzGQ6I76X2vWI2uJ+aeXlWFedNWW8TETLhEU4+233aVpfcbITnOPVUPGlKk+CKS4e0G+42UI6iaIgseRbYka6ryt+k7FAmtTIsV5DzRyhSpbqgOWOilEHr4163rTdmu8hEmbE/rKE7UPtOKacA8tySDj2UpUPpIAzBgFtrCyma2oLxIZDi0vc3XxatLWS3TUzWYq3ZSQQl+Q8t5aQfqlZOPspSlMjhjiGFjQBwlyzyTOxSOJPJuv/9k=" style="height:48px;width:48px;object-fit:contain;border-radius:4px;">
+  <h1>Mécanisme d'Ajustement — Suivi Équilibrage</h1>
+  <span class="subtitle" id="last-update">—</span>
+</header>
+
+<!-- SETUP -->
+<div class="setup-panel">
+  <h2>Configuration API</h2>
+  <div class="setup-grid">
+    <div class="field">
+      <label>Client ID</label>
+      <input type="text" id="client-id" value="6b4e0941-90dc-4a26-928e-6c6fdb47c19b">
+    </div>
+    <div class="field">
+      <label>Client Secret</label>
+      <input type="password" id="client-secret" value="25b80a54-29c1-489d-b854-a2641f60df7b">
+    </div>
+    <div class="field">
+      <label>Date début</label>
+      <input type="date" id="date-start">
+    </div>
+    <div class="field">
+      <label>Date fin</label>
+      <input type="date" id="date-end">
+    </div>
+    <button class="btn-fetch" id="btn-fetch" onclick="fetchAll()">▶ Charger</button>
+  </div>
+  <div class="setup-grid" style="margin-top:8px;grid-template-columns:1fr 1fr 1fr 1fr;">
+    <div class="field">
+      <label>Heure début</label>
+      <input type="time" id="time-start" value="00:00" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;border-radius:2px;outline:none;">
+    </div>
+    <div class="field">
+      <label>Heure fin</label>
+      <input type="time" id="time-end" value="23:59" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;border-radius:2px;outline:none;">
+    </div>
+  </div>
+  <div class="setup-grid" style="margin-top:12px; grid-template-columns: auto auto auto auto 1fr;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;">Auto-refresh</label>
+      <select id="refresh-interval" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;">
+        <option value="0">OFF</option>
+        <option value="5">5 min</option>
+        <option value="15" selected>15 min</option>
+        <option value="30">30 min</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px;">
+      <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;">Seuil vol. ↓</label>
+      <input type="number" id="seuil-vol" value="10" style="width:70px;background:var(--bg);border:1px solid var(--border);color:var(--yellow);padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim)">MWh</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:16px;">
+      <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;">Seuil PRE</label>
+      <input type="number" id="seuil-pre" value="-100" style="width:80px;background:var(--bg);border:1px solid var(--border);color:var(--red);padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim)">€/MWh</span>
+    </div>
+    <button onclick="toggleAutoRefresh()" id="btn-autorefresh" style="margin-left:16px;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.3);color:var(--green);padding:4px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;cursor:pointer;letter-spacing:0.08em;">
+      ▶ Démarrer surveillance
+    </button>
+    <div id="alert-log" style="margin-left:16px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);align-self:center;"></div>
+  </div>
+</div>
+
+<!-- STATUS -->
+<div class="status-bar" id="status">
+  <span class="dot"></span>
+  <span>En attente — renseigne tes identifiants API et une plage de dates</span>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-strip">
+  <div class="kpi" style="--kpi-color: var(--red)">
+    <div class="kpi-label">PRE min</div>
+    <div class="kpi-value" id="kpi-pre-min">—</div>
+    <div class="kpi-unit">€/MWh</div>
+  </div>
+  <div class="kpi" style="--kpi-color: var(--green)">
+    <div class="kpi-label">PRE max</div>
+    <div class="kpi-value" id="kpi-pre-max">—</div>
+    <div class="kpi-unit">€/MWh</div>
+  </div>
+  <div class="kpi" style="--kpi-color: var(--accent)">
+    <div class="kpi-label">PMP moyen ↓</div>
+    <div class="kpi-value" id="kpi-pmp-down">—</div>
+    <div class="kpi-unit">€/MWh (baisse)</div>
+  </div>
+  <div class="kpi" style="--kpi-color: var(--yellow)">
+    <div class="kpi-label">Vol. activé ↓</div>
+    <div class="kpi-value" id="kpi-vol-down">—</div>
+    <div class="kpi-unit">MWh total</div>
+  </div>
+  <div class="kpi" style="--kpi-color: var(--accent2)">
+    <div class="kpi-label">Sessions MA ↓</div>
+    <div class="kpi-value" id="kpi-sessions">—</div>
+    <div class="kpi-unit">créneaux activés</div>
+  </div>
+  <div class="kpi" style="--kpi-color: var(--accent3)">
+    <div class="kpi-label">Tendance</div>
+    <div class="kpi-value" id="kpi-trend">—</div>
+    <div class="kpi-unit">dernière valeur</div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="charts-grid">
+  <div class="chart-card full-width">
+    <div class="chart-header">
+      <span class="chart-title">PRE / PMP / PME — Courbe des prix</span>
+      <span class="chart-badge" style="background:rgba(0,200,255,0.1);color:var(--accent)">€/MWh · pas 15 min</span>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;">
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:12px;height:12px;background:rgba(255,140,0,0.6);border:1px solid rgba(255,140,0,0.9);border-radius:2px;"></span>
+        <span style="color:#ff8c00">🟠 Appel probable (PMP &lt; −100 €/MWh)</span>
+      </span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:12px;height:12px;background:rgba(255,220,0,0.4);border:1px solid rgba(255,220,0,0.7);border-radius:2px;"></span>
+        <span style="color:#ffdc00">🟡 Zone grise (PMP entre −50 et −100 €/MWh)</span>
+      </span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:12px;height:12px;background:rgba(0,140,255,0.3);border:1px solid rgba(0,140,255,0.7);border-radius:2px;border-style:dashed;"></span>
+        <span style="color:#008cff">🔵 Congestion probable (PRE+ / PMP↓ &lt; −50 €/MWh)</span>
+      </span>
+    </div>
+    <div class="chart-canvas-wrap" id="chart-prix-wrap">
+      <div class="placeholder" id="placeholder-prix">Aucune donnée chargée</div>
+      <canvas id="chart-prix" style="display:none"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">Volumes activés à la baisse (RR spécifique)</span>
+      <span class="chart-badge" style="background:rgba(255,64,96,0.1);color:var(--red)">MWh</span>
+    </div>
+    <div class="chart-canvas-wrap" id="chart-vol-wrap">
+      <div class="placeholder" id="placeholder-vol">Aucune donnée chargée</div>
+      <canvas id="chart-vol" style="display:none"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">aFRR vs MA spécifique — Répartition des volumes</span>
+      <span class="chart-badge" style="background:rgba(0,229,160,0.1);color:var(--green)">MWh · baisse</span>
+    </div>
+    <div class="chart-canvas-wrap" id="chart-split-wrap">
+      <div class="placeholder" id="placeholder-split">Aucune donnée chargée</div>
+      <canvas id="chart-split" style="display:none"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYSE CROISÉE -->
+<div class="analysis-section">
+  <div class="section-title">Analyse croisée — Créneaux avec MA à la baisse détecté</div>
+  <div id="table-wrap">
+    <div class="placeholder">Aucune donnée — les créneaux où PRE &lt; −50 €/MWh et volume MA &gt; 0 MWh seront listés ici</div>
+  </div>
+</div>
+
+<footer>
+  <span>Source : API Balancing Energy — data.rte-france.com · Données publiques</span>
+  <span id="footer-range">—</span>
+</footer>
+
+<script>
+// ─── GLOBALS ───────────────────────────────────────────────
+let token = null;
+let chartPrix = null, chartVol = null, chartSplit = null;
+
+// Default dates: last 14 days
+const today = new Date();
+const d14 = new Date(); d14.setDate(today.getDate() - 14);
+document.getElementById('date-start').value = d14.toISOString().slice(0,10);
+document.getElementById('date-end').value = today.toISOString().slice(0,10);
+
+// ─── GOOGLE APPS SCRIPT PROXY ──────────────────────────────
+const GAS = 'https://script.google.com/macros/s/AKfycbzesJQqos-s_48e4r4p79P1hYxO_arsIo2SqetUa58DOVkDE10qklJ4cHpzY2GHj9IGRQ/exec';
+
+async function getToken(clientId, clientSecret) {
+  // Le proxy GAS gère l'auth en interne — on fait juste un ping pour vérifier
+  return 'gas_proxy'; // token factice, le proxy s'authentifie lui-même
+}
+
+async function fetchWithRetry(url, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return res.json();
+      throw new Error(`HTTP ${res.status}`);
+    } catch(e) {
+      if (i === retries - 1) throw e;
+      setStatus('loading', `Tentative ${i+2}/${retries}…`);
+      await new Promise(r => setTimeout(r, 1500 * (i+1)));
+    }
+  }
+}
+
+async function fetchPrices(startDate, endDate) {
+  const url = `${GAS}?endpoint=imbalance_data&query=${encodeURIComponent('start_date=' + startDate + '&end_date=' + endDate)}`;
+  return fetchWithRetry(url);
+}
+
+async function fetchVolumes(startDate, endDate) {
+  const url = `${GAS}?endpoint=volumes_per_reasons&query=${encodeURIComponent('start_date=' + startDate + '&end_date=' + endDate)}`;
+  return fetchWithRetry(url);
+}
+
+// ─── MAIN ──────────────────────────────────────────────────
+async function fetchAll() {
+  const clientId = document.getElementById('client-id').value.trim();
+  const clientSecret = document.getElementById('client-secret').value.trim();
+  const dateStart = document.getElementById('date-start').value;
+  const dateEnd = document.getElementById('date-end').value;
+
+  if (!clientId || !clientSecret) {
+    setStatus('error', 'Renseigne ton Client ID et Client Secret');
+    return;
+  }
+  if (!dateStart || !dateEnd) {
+    setStatus('error', 'Sélectionne une plage de dates');
+    return;
+  }
+
+  const btn = document.getElementById('btn-fetch');
+  btn.disabled = true;
+  setStatus('loading', 'Connexion au proxy Google…');
+
+  try {
+    token = 'gas_proxy';
+    setStatus('loading', 'Proxy OK — récupération des prix et volumes…');
+
+    const timeStart = document.getElementById('time-start')?.value || '00:00';
+    const timeEnd   = document.getElementById('time-end')?.value   || '23:59';
+    const startISO  = encodeURIComponent(`${dateStart}T${timeStart}:00+02:00`);
+    const endISO    = encodeURIComponent(`${dateEnd}T${timeEnd}:00+02:00`);
+
+    const pricesData  = await fetchPrices(startISO, endISO);
+    setStatus('loading', 'Prix OK — récupération des volumes…');
+    const volumesData = await fetchVolumes(startISO, endISO);
+
+    setStatus('loading', 'Données reçues — rendu en cours…');
+    console.log('PRICES:', JSON.stringify(pricesData).substring(0, 300));
+    console.log('VOLUMES:', JSON.stringify(volumesData).substring(0, 300));
+    const { pp, vp } = renderDashboard(pricesData, volumesData, dateStart, dateEnd);
+    if (isWatching) checkAlerts(pp, vp);
+    setStatus('ok', `Données chargées — ${dateStart} → ${dateEnd}`);
+    document.getElementById('last-update').textContent = `Màj : ${new Date().toLocaleTimeString('fr-FR')}`;
+    document.getElementById('footer-range').textContent = `Période : ${dateStart} → ${dateEnd}`;
+  } catch(e) {
+    setStatus('error', `Erreur : ${e.message}`);
+    console.error(e);
+  }
+
+  btn.disabled = false;
+}
+
+// ─── RENDER ────────────────────────────────────────────────
+function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
+  // Parse prix (API v5)
+  const pricePoints = [];
+  const imbalance = pricesData?.imbalance_date || pricesData?.imbalance_data || [];
+  imbalance.forEach(d => {
+    (d.values || []).forEach(v => {
+      pricePoints.push({
+        ts: new Date(v.start_date),
+        pre: v.imbalance ?? v.imbalance_price ?? null,
+        pmp_down: v.negative_imbalance_settlement_price ?? v.downward_price ?? null,
+        pmp_up: v.positive_imbalance_settlement_price ?? v.upward_price ?? null,
+        trend: v.system_trend ?? v.trend ?? null
+      });
+    });
+  });
+  pricePoints.sort((a,b) => a.ts - b.ts);
+
+  // Parse volumes (API v5 — structure "reasons")
+  const volPoints = [];
+  const volData = volumesData?.reasons || volumesData?.volumes_per_reasons || [];
+  volData.forEach(d => {
+    (d.values || []).forEach(v => {
+      volPoints.push({
+        ts: new Date(v.start_date),
+        vol_down_rr:   v.downward_volume_balancing  ?? 0,
+        vol_up_rr:     v.upward_volume_balancing    ?? 0,
+        vol_down_afrr: v.downward_volume_afrr       ?? v.downward_volume_frequency ?? 0,
+        vol_up_afrr:   v.upward_volume_afrr         ?? v.upward_volume_frequency   ?? 0,
+        vol_down_cong: v.downward_volume_congestion ?? 0,
+        vol_down_total: (v.downward_volume_balancing ?? 0)
+                      + (v.downward_volume_afrr ?? v.downward_volume_frequency ?? 0)
+                      + (v.downward_volume_congestion ?? 0)
+      });
+    });
+  });
+  volPoints.sort((a,b) => a.ts - b.ts);
+
+  // Fallback: si volumes vides ou structure différente, générer des données de démo visuelles
+  // pour montrer le fonctionnement (à commenter en prod)
+  let usingDemo = false;
+  if (pricePoints.length === 0) {
+    usingDemo = true;
+    generateDemoData(pricePoints, volPoints, dateStart, dateEnd);
+  }
+
+  // KPIs
+  const preValues = pricePoints.map(p => p.pre).filter(v => v !== null);
+  const pmpDownValues = pricePoints.map(p => p.pmp_down).filter(v => v !== null);
+  const volDownValues = volPoints.map(p => p.vol_down_total || p.vol_down_rr || 0);
+
+  setKpi('kpi-pre-min', preValues.length ? Math.min(...preValues).toFixed(0) : '—', Math.min(...preValues) < 0);
+  setKpi('kpi-pre-max', preValues.length ? Math.max(...preValues).toFixed(0) : '—', false, Math.max(...preValues) > 0);
+  setKpi('kpi-pmp-down', pmpDownValues.length ? (pmpDownValues.reduce((a,b)=>a+b,0)/pmpDownValues.length).toFixed(0) : '—');
+  const totalVolDown = volDownValues.reduce((a,b)=>a+b,0);
+  setKpi('kpi-vol-down', totalVolDown > 0 ? totalVolDown.toFixed(0) : '0');
+  const sessionsMA = volPoints.filter(p => (p.vol_down_rr || 0) > 0).length;
+  setKpi('kpi-sessions', sessionsMA.toString());
+  const lastTrend = pricePoints.at(-1)?.trend;
+  setKpi('kpi-trend', lastTrend === 'DOWN' ? '↓ BAISSE' : lastTrend === 'UP' ? '↑ HAUSSE' : '—');
+
+  // CHART 1 : Prix avec bandeaux via plugin canvas
+  const labels = pricePoints.map(p => p.ts.toLocaleString('fr-FR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}));
+
+  // Zone 🟠 Orange : PMP↓ < -100 + solaire → appel très probable
+  const orionZones = [];
+  let ozStart = null;
+  pricePoints.forEach((p, i) => {
+    const sol = p.ts.getHours() >= 7 && p.ts.getHours() < 20;
+    const ok  = sol && p.pmp_down !== null && p.pmp_down < -100;
+    if (ok  && ozStart === null) ozStart = i;
+    if (!ok && ozStart !== null) { orionZones.push([ozStart, i-1]); ozStart = null; }
+  });
+  if (ozStart !== null) orionZones.push([ozStart, pricePoints.length-1]);
+
+  // Zone 🟡 Jaune : PMP↓ entre -50 et -100 + solaire → zone grise
+  const grayZones = [];
+  let gzStart = null;
+  pricePoints.forEach((p, i) => {
+    const sol = p.ts.getHours() >= 7 && p.ts.getHours() < 20;
+    const ok  = sol && p.pmp_down !== null && p.pmp_down < -50 && p.pmp_down >= -100;
+    if (ok  && gzStart === null) gzStart = i;
+    if (!ok && gzStart !== null) { grayZones.push([gzStart, i-1]); gzStart = null; }
+  });
+  if (gzStart !== null) grayZones.push([gzStart, pricePoints.length-1]);
+
+  // Zone 🔵 Bleu : PRE positif + PMP↓ < -50 + solaire → congestion probable
+  const congZones = [];
+  let czStart = null;
+  pricePoints.forEach((p, i) => {
+    const sol = p.ts.getHours() >= 7 && p.ts.getHours() < 20;
+    const ok  = sol && p.pre > 50 && p.pmp_down !== null && p.pmp_down < -50;
+    if (ok  && czStart === null) czStart = i;
+    if (!ok && czStart !== null) { congZones.push([czStart, i-1]); czStart = null; }
+  });
+  if (czStart !== null) congZones.push([czStart, pricePoints.length-1]);
+
+  // Plugin canvas : dessine les bandeaux AVANT les données
+  const bandeauPlugin = {
+    id: 'bandeaux',
+    beforeDraw(chart) {
+      const { ctx, chartArea, scales } = chart;
+      if (!chartArea) return;
+      const xScale = scales.x;
+      ctx.save();
+
+      // 🟡 Jaune — zone grise (PMP -50 à -100, solaire)
+      grayZones.forEach(([s, e]) => {
+        const x1 = xScale.getPixelForValue(s);
+        const x2 = xScale.getPixelForValue(e);
+        ctx.fillStyle = 'rgba(255,220,0,0.12)';
+        ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.height);
+        ctx.strokeStyle = 'rgba(255,220,0,0.4)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2,3]);
+        ctx.beginPath(); ctx.moveTo(x1, chartArea.top); ctx.lineTo(x1, chartArea.bottom); ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      // 🟠 Orange — appel très probable (PMP < -100, solaire)
+      orionZones.forEach(([s, e]) => {
+        const x1 = xScale.getPixelForValue(s);
+        const x2 = xScale.getPixelForValue(e);
+        ctx.fillStyle = 'rgba(255,140,0,0.22)';
+        ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.height);
+        ctx.strokeStyle = 'rgba(255,140,0,0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(x1, chartArea.top); ctx.lineTo(x1, chartArea.bottom); ctx.stroke();
+      });
+
+      // 🔵 Bleu — congestion probable (PRE+ / PMP↓, solaire)
+      congZones.forEach(([s, e]) => {
+        const x1 = xScale.getPixelForValue(s);
+        const x2 = xScale.getPixelForValue(e);
+        ctx.fillStyle = 'rgba(0,140,255,0.18)';
+        ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.height);
+        ctx.strokeStyle = 'rgba(0,140,255,0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4,3]);
+        ctx.beginPath(); ctx.moveTo(x1, chartArea.top); ctx.lineTo(x1, chartArea.bottom); ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      ctx.restore();
+    }
+  };
+
+  document.getElementById('placeholder-prix').style.display = 'none';
+  const c1 = document.getElementById('chart-prix');
+  c1.style.display = 'block';
+  if (chartPrix) chartPrix.destroy();
+  chartPrix = new Chart(c1, {
+    type: 'line',
+    plugins: [bandeauPlugin],
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'PRE',
+          data: pricePoints.map(p => p.pre),
+          borderColor: '#00c8ff',
+          backgroundColor: 'rgba(0,200,255,0.05)',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false
+        },
+        {
+          label: 'PMP ↓',
+          data: pricePoints.map(p => p.pmp_down),
+          borderColor: '#ff4060',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+          borderDash: [3,3]
+        },
+        {
+          label: 'PMP ↑',
+          data: pricePoints.map(p => p.pmp_up),
+          borderColor: '#00e5a0',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+          borderDash: [3,3]
+        }
+      ]
+    },
+    options: chartOptions('€/MWh', true)
+  });
+
+  // CHART 2 : Volumes RR
+  document.getElementById('placeholder-vol').style.display = 'none';
+  const c2 = document.getElementById('chart-vol');
+  c2.style.display = 'block';
+  if (chartVol) chartVol.destroy();
+  const labelsV = volPoints.map(p => p.ts.toLocaleString('fr-FR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}));
+  chartVol = new Chart(c2, {
+    type: 'bar',
+    data: {
+      labels: labelsV,
+      datasets: [{
+        label: 'Vol MA ↓ (RR spéc.)',
+        data: volPoints.map(p => p.vol_down_rr || 0),
+        backgroundColor: 'rgba(255,64,96,0.6)',
+        borderColor: '#ff4060',
+        borderWidth: 1
+      }]
+    },
+    options: chartOptions('MWh')
+  });
+
+  // CHART 3 : aFRR vs RR
+  document.getElementById('placeholder-split').style.display = 'none';
+  const c3 = document.getElementById('chart-split');
+  c3.style.display = 'block';
+  if (chartSplit) chartSplit.destroy();
+  chartSplit = new Chart(c3, {
+    type: 'bar',
+    data: {
+      labels: labelsV,
+      datasets: [
+        {
+          label: 'aFRR ↓',
+          data: volPoints.map(p => p.vol_down_afrr || 0),
+          backgroundColor: 'rgba(0,229,160,0.5)',
+          borderColor: '#00e5a0',
+          borderWidth: 1,
+          stack: 'a'
+        },
+        {
+          label: 'RR spécifique ↓',
+          data: volPoints.map(p => p.vol_down_rr || 0),
+          backgroundColor: 'rgba(255,64,96,0.5)',
+          borderColor: '#ff4060',
+          borderWidth: 1,
+          stack: 'a'
+        }
+      ]
+    },
+    options: chartOptions('MWh')
+  });
+
+  // TABLEAU ANALYSE CROISÉE
+  renderTable(pricePoints, volPoints, usingDemo);
+  return { pp: pricePoints, vp: volPoints };
+}
+
+function renderTable(pricePoints, volPoints, isDemo) {
+  const rows = [];
+  pricePoints.forEach(pp => {
+    if (pp.pre === null) return;
+    let bestVol = null, bestDiff = Infinity;
+    volPoints.forEach(vp => {
+      const diff = Math.abs(pp.ts - vp.ts);
+      if (diff < bestDiff) { bestDiff = diff; bestVol = vp; }
+    });
+    const volRR   = bestVol && bestDiff < 7*60*1000 ? (bestVol.vol_down_rr   || 0) : 0;
+    const volAfrr = bestVol && bestDiff < 7*60*1000 ? (bestVol.vol_down_afrr || 0) : 0;
+    const volCong = bestVol && bestDiff < 7*60*1000 ? (bestVol.vol_down_cong || 0) : 0;
+
+    const h = pp.ts.getHours();
+    const heureSolaire = h >= 7 && h < 20;
+
+    // Signal classique : PMP < -100, heures solaires
+    const orionEligible = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -100;
+
+    // Zone grise : PMP entre -50 et -100, heures solaires
+    const zoneGrise = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -50 && pp.pmp_down >= -100;
+
+    // Signature congestion Orion : PRE positif + PMP↓ négatif + heures solaires
+    const congestionOrion = heureSolaire && pp.pre > 50 && pp.pmp_down !== null && pp.pmp_down < -50;
+
+    if (pp.pre < -50 || volRR > 0 || volAfrr > 0 || orionEligible || zoneGrise || congestionOrion) {
+      rows.push({ ts: pp.ts, pre: pp.pre, pmp_down: pp.pmp_down, volRR, volAfrr, volCong, orionEligible, zoneGrise, congestionOrion, heureSolaire });
+    }
+  });
+
+  const wrap = document.getElementById('table-wrap');
+  if (rows.length === 0) {
+    wrap.innerHTML = '<div class="placeholder">Aucun créneau détecté sur la période</div>';
+    return;
+  }
+
+  const orionCount = rows.filter(r => r.orionEligible).length;
+  const grayCount  = rows.filter(r => r.zoneGrise).length;
+  const congCount  = rows.filter(r => r.congestionOrion).length;
+
+  let html = `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.08em;display:flex;gap:20px;flex-wrap:wrap;">
+    <span>${rows.length} créneaux sur la période</span>
+    <span style="color:#ff8c00">🟠 ${orionCount} appel probable (PMP&lt;-100)</span>
+    <span style="color:#ffdc00">🟡 ${grayCount} zone grise (PMP -50/-100)</span>
+    <span style="color:#008cff">🔵 ${congCount} congestion probable</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Horodatage</th>
+      <th>PRE (€/MWh)</th>
+      <th>PMP ↓ (€/MWh)</th>
+      <th>Vol MA ↓ (MWh)</th>
+      <th>Vol aFRR ↓ (MWh)</th>
+      <th>Vol Cong. ↓ (MWh)</th>
+      <th>Signal MA</th>
+    </tr></thead><tbody>`;
+
+  rows.slice().reverse().forEach(r => {
+    const dateStr  = r.ts.toLocaleString('fr-FR');
+    const preStr   = r.pre !== null ? r.pre.toFixed(1) : '—';
+    const preClass = r.pre < 0 ? 'price-neg' : 'price-pos';
+    const pmpStr   = r.pmp_down !== null ? r.pmp_down.toFixed(1) : '—';
+    const signal   = r.congestionOrion && r.orionEligible  ? `<span class="tag-oui">✅ MA + CONG. ORION</span>` :
+                     r.orionEligible                       ? `<span class="tag-orion">🟠 APPEL PROBABLE</span>` :
+                     r.congestionOrion                     ? `<span class="tag-cong">🔵 CONGESTION PROBABLE</span>` :
+                     r.zoneGrise && r.volRR > 0            ? `<span class="tag-oui">MA ACTIVÉ (zone grise)</span>` :
+                     r.zoneGrise                           ? `<span class="tag-gray">🟡 ZONE GRISE</span>` :
+                     r.volRR > 0                           ? `<span class="tag-oui">MA ACTIVÉ</span>` :
+                     r.pre < -150                          ? `<span class="tag-fort">PRE FORT</span>` :
+                     r.volAfrr > 0                         ? `<span class="tag-non">aFRR seul</span>` :
+                                                             `<span class="tag-non">—</span>`;
+    const rowStyle = r.orionEligible   ? ' style="background:rgba(255,140,0,0.05)"' :
+                     r.congestionOrion ? ' style="background:rgba(0,140,255,0.05)"' :
+                     r.zoneGrise       ? ' style="background:rgba(255,220,0,0.03)"' : '';
+    html += `<tr${rowStyle}>
+      <td>${dateStr}</td>
+      <td class="${preClass}">${preStr}</td>
+      <td>${pmpStr}</td>
+      <td>${r.volRR   > 0 ? r.volRR.toFixed(1)   : '—'}</td>
+      <td>${r.volAfrr > 0 ? r.volAfrr.toFixed(1) : '—'}</td>
+      <td>${r.volCong > 0 ? r.volCong.toFixed(1) : '—'}</td>
+      <td>${signal}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  if (isDemo) html = `<div style="padding:6px 12px;background:rgba(255,192,64,0.08);border:1px solid rgba(255,192,64,0.3);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#ffc040;margin-bottom:10px;letter-spacing:0.1em">⚠ DONNÉES DE DÉMONSTRATION — Renseigne tes clés API pour les vraies données</div>` + html;
+  wrap.innerHTML = html;
+}
+
+// ─── DEMO DATA (si pas de clés API) ──────────────────────
+function generateDemoData(pricePoints, volPoints, dateStart, dateEnd) {
+  const start = new Date(dateStart);
+  const end = new Date(dateEnd);
+  const step = 15 * 60 * 1000; // 15min
+  let t = start.getTime();
+  let pre = 20;
+  while (t <= end.getTime()) {
+    const dt = new Date(t);
+    const hour = dt.getHours();
+    // Simulation : PRE bas en milieu de journée (pic solaire)
+    const solar = hour >= 10 && hour <= 14 ? -1 : 0.3;
+    pre += (Math.random() - 0.5) * 30 + solar * 20;
+    pre = Math.max(-280, Math.min(250, pre));
+    const pmp_down = pre < 0 ? pre * 0.9 + (Math.random()-0.5)*10 : null;
+    const pmp_up = pre > 0 ? pre * 0.85 + (Math.random()-0.5)*10 : null;
+    pricePoints.push({ ts: dt, pre, pmp_down, pmp_up, trend: pre < 0 ? 'DOWN' : 'UP' });
+
+    // Volumes: MA activé si PRE très négatif
+    const volRR = pre < -80 && Math.random() > 0.6 ? Math.abs(pre) * 0.5 * Math.random() : 0;
+    const volAfrr = pre < -30 ? Math.abs(pre) * 1.2 * Math.random() : 0;
+    volPoints.push({ ts: dt, vol_down_rr: volRR, vol_down_afrr: volAfrr, vol_down_total: volRR + volAfrr });
+
+    t += step;
+  }
+}
+
+// ─── AUTO-REFRESH & ALERTES ────────────────────────────────
+let refreshTimer = null;
+let isWatching = false;
+let alertedKeys = new Set(); // évite de ré-alerter le même créneau
+
+function toggleAutoRefresh() {
+  if (isWatching) {
+    stopWatch();
+  } else {
+    startWatch();
+  }
+}
+
+function startWatch() {
+  isWatching = true;
+  const btn = document.getElementById('btn-autorefresh');
+  btn.textContent = '⏹ Arrêter surveillance';
+  btn.style.background = 'rgba(255,64,96,0.1)';
+  btn.style.borderColor = 'rgba(255,64,96,0.3)';
+  btn.style.color = 'var(--red)';
+
+  // Demander permission notifications navigateur
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  // Mettre la date de fin à aujourd'hui automatiquement
+  document.getElementById('date-end').value = new Date().toISOString().slice(0,10);
+
+  fetchAll(); // premier fetch immédiat
+  scheduleNext();
+  document.getElementById('alert-log').textContent = `Surveillance active — prochain refresh dans ${document.getElementById('refresh-interval').value} min`;
+}
+
+function stopWatch() {
+  isWatching = false;
+  if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+  const btn = document.getElementById('btn-autorefresh');
+  btn.textContent = '▶ Démarrer surveillance';
+  btn.style.background = 'rgba(0,229,160,0.1)';
+  btn.style.borderColor = 'rgba(0,229,160,0.3)';
+  btn.style.color = 'var(--green)';
+  document.getElementById('alert-log').textContent = 'Surveillance arrêtée';
+}
+
+function scheduleNext() {
+  if (!isWatching) return;
+  const minutes = parseInt(document.getElementById('refresh-interval').value) || 15;
+  if (minutes === 0) return;
+  refreshTimer = setTimeout(() => {
+    document.getElementById('date-end').value = new Date().toISOString().slice(0,10);
+    fetchAll().then(() => {
+      if (isWatching) {
+        scheduleNext();
+        const next = new Date(Date.now() + minutes * 60000);
+        document.getElementById('alert-log').textContent =
+          `Prochain refresh à ${next.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}`;
+      }
+    });
+  }, minutes * 60 * 1000);
+}
+
+function checkAlerts(pricePoints, volPoints) {
+  const seuilVol = parseFloat(document.getElementById('seuil-vol').value) || 10;
+  const seuilPre = parseFloat(document.getElementById('seuil-pre').value) || -100;
+
+  // Regarder uniquement les 2 dernières heures (données fraîches)
+  const cutoff = Date.now() - 2 * 60 * 60 * 1000;
+
+  pricePoints.forEach(pp => {
+    if (pp.ts.getTime() < cutoff) return;
+    if (pp.pre === null || pp.pre >= seuilPre) return;
+
+    // Trouver volume correspondant
+    let bestVol = null, bestDiff = Infinity;
+    volPoints.forEach(vp => {
+      const diff = Math.abs(pp.ts - vp.ts);
+      if (diff < bestDiff) { bestDiff = diff; bestVol = vp; }
+    });
+    if (!bestVol || bestDiff > 10 * 60 * 1000) return;
+
+    const vol = bestVol.vol_down_rr || 0;
+    if (vol < seuilVol) return;
+
+    // Clé unique pour ce créneau (évite doublons)
+    const key = `${pp.ts.toISOString()}_${vol.toFixed(0)}`;
+    if (alertedKeys.has(key)) return;
+    alertedKeys.add(key);
+
+    const msg = `🚨 MA ACTIVÉ — ${pp.ts.toLocaleString('fr-FR')} | Vol: ${vol.toFixed(1)} MWh | PRE: ${pp.pre.toFixed(0)} €/MWh`;
+
+    // Bannière dans le dashboard
+    showAlertBanner(msg);
+
+    // Notification navigateur
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Dashboard MA — Activation détectée', {
+        body: `Vol: ${vol.toFixed(1)} MWh | PRE: ${pp.pre.toFixed(0)} €/MWh\n${pp.ts.toLocaleString('fr-FR')}`,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect fill="%230a0e14" width="32" height="32"/><text y="24" font-size="24">⚡</text></svg>'
+      });
+    }
+  });
+}
+
+function showAlertBanner(msg) {
+  let banner = document.getElementById('alert-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'alert-banner';
+    banner.style.cssText = `
+      margin: 0 32px 12px;
+      background: rgba(255,64,96,0.08);
+      border: 1px solid rgba(255,64,96,0.4);
+      border-radius: 4px;
+      padding: 10px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--red);
+      letter-spacing: 0.05em;
+    `;
+    document.getElementById('status').insertAdjacentElement('afterend', banner);
+  }
+  // Ajouter la nouvelle alerte en haut
+  const line = document.createElement('div');
+  line.style.marginBottom = '4px';
+  line.textContent = `[${new Date().toLocaleTimeString('fr-FR')}] ${msg}`;
+  banner.insertBefore(line, banner.firstChild);
+  // Garder max 5 alertes visibles
+  while (banner.children.length > 5) banner.removeChild(banner.lastChild);
+}
+
+// ─── HELPERS ───────────────────────────────────────────────
+function chartOptions(unit, showZeroLine = false) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        labels: {
+          color: '#5a7090',
+          font: { family: 'IBM Plex Mono', size: 10 },
+          boxWidth: 16, padding: 12
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1a2030',
+        borderColor: '#1e2a3a',
+        borderWidth: 1,
+        titleColor: '#c8d8e8',
+        bodyColor: '#5a7090',
+        titleFont: { family: 'IBM Plex Mono', size: 10 },
+        bodyFont: { family: 'IBM Plex Mono', size: 10 },
+        callbacks: {
+          label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) : '—'} ${unit}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#5a7090', font: { family: 'IBM Plex Mono', size: 9 }, maxTicksLimit: 12, maxRotation: 0 },
+        grid: { color: 'rgba(30,42,58,0.8)' }
+      },
+      y: {
+        ticks: { color: '#5a7090', font: { family: 'IBM Plex Mono', size: 9 } },
+        grid: { color: 'rgba(30,42,58,0.8)' },
+        ...(showZeroLine ? {
+          afterDataLimits(scale) {
+            scale.max = Math.max(scale.max, 0);
+            scale.min = Math.min(scale.min, 0);
+          }
+        } : {})
+      }
+    }
+  };
+}
+
+function setKpi(id, value, isNeg = false, isPos = false) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = value;
+  if (isNeg) el.style.color = 'var(--red)';
+  else if (isPos) el.style.color = 'var(--green)';
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = `status-bar ${type}`;
+  el.innerHTML = `<span class="dot ${type === 'loading' ? 'blink' : ''}"></span><span>${msg}</span>`;
+}
+
+// Init : afficher démo au chargement
+window.addEventListener('load', () => {
+  const demoPrice = [], demoVol = [];
+  generateDemoData(demoPrice, demoVol,
+    document.getElementById('date-start').value,
+    document.getElementById('date-end').value
+  );
+  renderDashboard({ imbalance_data: [] }, { volumes_per_reasons: [] },
+    document.getElementById('date-start').value,
+    document.getElementById('date-end').value
+  );
+});
+</script>
+</body>
+</html>

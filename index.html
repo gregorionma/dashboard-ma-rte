@@ -445,12 +445,7 @@
       </select>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-left:16px;">
-      <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;">Seuil vol. ↓</label>
-      <input type="number" id="seuil-vol" value="10" style="width:70px;background:var(--bg);border:1px solid var(--border);color:var(--yellow);padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim)">MWh</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-left:16px;">
-      <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;">Seuil PRE</label>
+      <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;">Seuil PME ↓</label>
       <input type="number" id="seuil-pre" value="-100" style="width:80px;background:var(--bg);border:1px solid var(--border);color:var(--red);padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim)">€/MWh</span>
     </div>
@@ -511,15 +506,7 @@
     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;">
       <span style="display:flex;align-items:center;gap:6px;">
         <span style="display:inline-block;width:12px;height:12px;background:rgba(255,140,0,0.6);border:1px solid rgba(255,140,0,0.9);border-radius:2px;"></span>
-        <span style="color:#ff8c00">🟠 Appel probable (PMP &lt; −100 €/MWh)</span>
-      </span>
-      <span style="display:flex;align-items:center;gap:6px;">
-        <span style="display:inline-block;width:12px;height:12px;background:rgba(255,220,0,0.4);border:1px solid rgba(255,220,0,0.7);border-radius:2px;"></span>
-        <span style="color:#ffdc00">🟡 Zone grise (PMP entre −50 et −100 €/MWh)</span>
-      </span>
-      <span style="display:flex;align-items:center;gap:6px;">
-        <span style="display:inline-block;width:12px;height:12px;background:rgba(0,140,255,0.3);border:1px solid rgba(0,140,255,0.7);border-radius:2px;border-style:dashed;"></span>
-        <span style="color:#008cff">🔵 Congestion probable (PRE+ / PMP↓ &lt; −50 €/MWh)</span>
+        <span style="color:#ff8c00">🟠 MA activé (PME &lt; −100 + volume RR confirmé)</span>
       </span>
     </div>
     <div class="chart-canvas-wrap" id="chart-prix-wrap">
@@ -575,24 +562,41 @@ const d14 = new Date(); d14.setDate(today.getDate() - 14);
 document.getElementById('date-start').value = d14.toISOString().slice(0,10);
 document.getElementById('date-end').value = today.toISOString().slice(0,10);
 
-// ─── GOOGLE APPS SCRIPT PROXY ──────────────────────────────
+// ─── JSONP (contourne CORS sans proxy) ─────────────────────
 const GAS = 'https://script.google.com/macros/s/AKfycbzesJQqos-s_48e4r4p79P1hYxO_arsIo2SqetUa58DOVkDE10qklJ4cHpzY2GHj9IGRQ/exec';
 
-async function getToken(clientId, clientSecret) {
-  // Le proxy GAS gère l'auth en interne — on fait juste un ping pour vérifier
-  return 'gas_proxy'; // token factice, le proxy s'authentifie lui-même
+function jsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP timeout — GAS trop lent'));
+    }, 30000);
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = (data) => {
+      cleanup();
+      if (data && data.error) reject(new Error(data.error));
+      else resolve(data);
+    };
+    script.onerror = () => { cleanup(); reject(new Error('JSONP script error')); };
+    script.src = url + '&callback=' + cbName;
+    document.head.appendChild(script);
+  });
 }
 
 async function fetchWithRetry(url, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
-      const res = await fetch(url);
-      if (res.ok) return res.json();
-      throw new Error(`HTTP ${res.status}`);
+      return await jsonp(url);
     } catch(e) {
-      if (i === retries - 1) throw e;
+      if (i === retries - 1) throw new Error(`GAS inaccessible : ${e.message}`);
       setStatus('loading', `Tentative ${i+2}/${retries}…`);
-      await new Promise(r => setTimeout(r, 1500 * (i+1)));
+      await new Promise(r => setTimeout(r, 2000 * (i+1)));
     }
   }
 }
@@ -720,27 +724,28 @@ function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
   // CHART 1 : Prix avec bandeaux via plugin canvas
   const labels = pricePoints.map(p => p.ts.toLocaleString('fr-FR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}));
 
-  // Zone 🟠 Orange : PMP↓ < -100 + solaire → appel très probable
+  // Fonction utilitaire : trouver le volume correspondant à un point prix
+  function getVolForPoint(p) {
+    let best = null, bestDiff = Infinity;
+    volPoints.forEach(vp => {
+      const diff = Math.abs(p.ts - vp.ts);
+      if (diff < bestDiff) { bestDiff = diff; best = vp; }
+    });
+    return (best && bestDiff < 10*60*1000) ? best : null;
+  }
+
+  // Zone 🟠 Orange uniquement : PME < -100 + solaire + volume RR > 0 → MA manuel confirmé
   const orionZones = [];
   let ozStart = null;
   pricePoints.forEach((p, i) => {
     const sol = p.ts.getHours() >= 7 && p.ts.getHours() < 20;
-    const ok  = sol && p.pmp_down !== null && p.pmp_down < -100;
+    const vol = getVolForPoint(p);
+    const hasMA = vol && (vol.vol_down_rr || 0) > 0;
+    const ok  = sol && p.pmp_down !== null && p.pmp_down < -100 && hasMA;
     if (ok  && ozStart === null) ozStart = i;
     if (!ok && ozStart !== null) { orionZones.push([ozStart, i-1]); ozStart = null; }
   });
   if (ozStart !== null) orionZones.push([ozStart, pricePoints.length-1]);
-
-  // Zone 🟡 Jaune : PMP↓ entre -50 et -100 + solaire → zone grise
-  const grayZones = [];
-  let gzStart = null;
-  pricePoints.forEach((p, i) => {
-    const sol = p.ts.getHours() >= 7 && p.ts.getHours() < 20;
-    const ok  = sol && p.pmp_down !== null && p.pmp_down < -50 && p.pmp_down >= -100;
-    if (ok  && gzStart === null) gzStart = i;
-    if (!ok && gzStart !== null) { grayZones.push([gzStart, i-1]); gzStart = null; }
-  });
-  if (gzStart !== null) grayZones.push([gzStart, pricePoints.length-1]);
 
   // Zone 🔵 Bleu : PRE positif + PMP↓ < -50 + solaire → congestion probable
   const congZones = [];
@@ -753,7 +758,7 @@ function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
   });
   if (czStart !== null) congZones.push([czStart, pricePoints.length-1]);
 
-  // Plugin canvas : dessine les bandeaux AVANT les données
+  // Plugin canvas : dessine uniquement les bandeaux oranges (MA confirmé)
   const bandeauPlugin = {
     id: 'bandeaux',
     beforeDraw(chart) {
@@ -761,21 +766,6 @@ function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
       if (!chartArea) return;
       const xScale = scales.x;
       ctx.save();
-
-      // 🟡 Jaune — zone grise (PMP -50 à -100, solaire)
-      grayZones.forEach(([s, e]) => {
-        const x1 = xScale.getPixelForValue(s);
-        const x2 = xScale.getPixelForValue(e);
-        ctx.fillStyle = 'rgba(255,220,0,0.12)';
-        ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.height);
-        ctx.strokeStyle = 'rgba(255,220,0,0.4)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2,3]);
-        ctx.beginPath(); ctx.moveTo(x1, chartArea.top); ctx.lineTo(x1, chartArea.bottom); ctx.stroke();
-        ctx.setLineDash([]);
-      });
-
-      // 🟠 Orange — appel très probable (PMP < -100, solaire)
       orionZones.forEach(([s, e]) => {
         const x1 = xScale.getPixelForValue(s);
         const x2 = xScale.getPixelForValue(e);
@@ -786,20 +776,6 @@ function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
         ctx.setLineDash([]);
         ctx.beginPath(); ctx.moveTo(x1, chartArea.top); ctx.lineTo(x1, chartArea.bottom); ctx.stroke();
       });
-
-      // 🔵 Bleu — congestion probable (PRE+ / PMP↓, solaire)
-      congZones.forEach(([s, e]) => {
-        const x1 = xScale.getPixelForValue(s);
-        const x2 = xScale.getPixelForValue(e);
-        ctx.fillStyle = 'rgba(0,140,255,0.18)';
-        ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.height);
-        ctx.strokeStyle = 'rgba(0,140,255,0.7)';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4,3]);
-        ctx.beginPath(); ctx.moveTo(x1, chartArea.top); ctx.lineTo(x1, chartArea.bottom); ctx.stroke();
-        ctx.setLineDash([]);
-      });
-
       ctx.restore();
     }
   };
@@ -922,13 +898,13 @@ function renderTable(pricePoints, volPoints, isDemo) {
     const h = pp.ts.getHours();
     const heureSolaire = h >= 7 && h < 20;
 
-    // Signal classique : PMP < -100, heures solaires
-    const orionEligible = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -100;
+    // Zone 🟠 : PME < -100 + MA réel activé
+    const orionEligible = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -100 && volRR > 0;
 
-    // Zone grise : PMP entre -50 et -100, heures solaires
-    const zoneGrise = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -50 && pp.pmp_down >= -100;
+    // Zone 🟡 : PME < -100 mais aFRR seul (pas de RR)
+    const zoneGrise = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -100 && volRR === 0;
 
-    // Signature congestion Orion : PRE positif + PMP↓ négatif + heures solaires
+    // Zone 🔵 : congestion probable
     const congestionOrion = heureSolaire && pp.pre > 50 && pp.pmp_down !== null && pp.pmp_down < -50;
 
     if (pp.pre < -50 || volRR > 0 || volAfrr > 0 || orionEligible || zoneGrise || congestionOrion) {
@@ -943,14 +919,10 @@ function renderTable(pricePoints, volPoints, isDemo) {
   }
 
   const orionCount = rows.filter(r => r.orionEligible).length;
-  const grayCount  = rows.filter(r => r.zoneGrise).length;
-  const congCount  = rows.filter(r => r.congestionOrion).length;
 
   let html = `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.08em;display:flex;gap:20px;flex-wrap:wrap;">
     <span>${rows.length} créneaux sur la période</span>
-    <span style="color:#ff8c00">🟠 ${orionCount} appel probable (PMP&lt;-100)</span>
-    <span style="color:#ffdc00">🟡 ${grayCount} zone grise (PMP -50/-100)</span>
-    <span style="color:#008cff">🔵 ${congCount} congestion probable</span>
+    <span style="color:#ff8c00">🟠 ${orionCount} créneaux MA activé (RR confirmé, PME&lt;-100)</span>
   </div>
   <table>
     <thead><tr>
@@ -968,18 +940,12 @@ function renderTable(pricePoints, volPoints, isDemo) {
     const preStr   = r.pre !== null ? r.pre.toFixed(1) : '—';
     const preClass = r.pre < 0 ? 'price-neg' : 'price-pos';
     const pmpStr   = r.pmp_down !== null ? r.pmp_down.toFixed(1) : '—';
-    const signal   = r.congestionOrion && r.orionEligible  ? `<span class="tag-oui">✅ MA + CONG. ORION</span>` :
-                     r.orionEligible                       ? `<span class="tag-orion">🟠 APPEL PROBABLE</span>` :
-                     r.congestionOrion                     ? `<span class="tag-cong">🔵 CONGESTION PROBABLE</span>` :
-                     r.zoneGrise && r.volRR > 0            ? `<span class="tag-oui">MA ACTIVÉ (zone grise)</span>` :
-                     r.zoneGrise                           ? `<span class="tag-gray">🟡 ZONE GRISE</span>` :
-                     r.volRR > 0                           ? `<span class="tag-oui">MA ACTIVÉ</span>` :
-                     r.pre < -150                          ? `<span class="tag-fort">PRE FORT</span>` :
-                     r.volAfrr > 0                         ? `<span class="tag-non">aFRR seul</span>` :
-                                                             `<span class="tag-non">—</span>`;
-    const rowStyle = r.orionEligible   ? ' style="background:rgba(255,140,0,0.05)"' :
-                     r.congestionOrion ? ' style="background:rgba(0,140,255,0.05)"' :
-                     r.zoneGrise       ? ' style="background:rgba(255,220,0,0.03)"' : '';
+    const signal   = r.orionEligible                     ? `<span class="tag-oui">🟠 MA ACTIVÉ (RR confirmé)</span>` :
+                     r.volRR > 0                          ? `<span class="tag-oui">MA ACTIVÉ</span>` :
+                     r.pre < -150                         ? `<span class="tag-fort">PRE FORT</span>` :
+                     r.volAfrr > 0                        ? `<span class="tag-non">aFRR seul</span>` :
+                                                            `<span class="tag-non">—</span>`;
+    const rowStyle = r.orionEligible ? ' style="background:rgba(255,140,0,0.05)"' : '';
     html += `<tr${rowStyle}>
       <td>${dateStr}</td>
       <td class="${preClass}">${preStr}</td>
@@ -1086,42 +1052,46 @@ function scheduleNext() {
 }
 
 function checkAlerts(pricePoints, volPoints) {
-  const seuilVol = parseFloat(document.getElementById('seuil-vol').value) || 10;
-  const seuilPre = parseFloat(document.getElementById('seuil-pre').value) || -100;
+  // Même logique que le bandeau orange :
+  // PME < -100 + volume RR > 0 + heures solaires (7h-20h)
+  const seuilPme = parseFloat(document.getElementById('seuil-pre').value) || -100;
 
   // Regarder uniquement les 2 dernières heures (données fraîches)
   const cutoff = Date.now() - 2 * 60 * 60 * 1000;
 
   pricePoints.forEach(pp => {
     if (pp.ts.getTime() < cutoff) return;
-    if (pp.pre === null || pp.pre >= seuilPre) return;
 
-    // Trouver volume correspondant
+    // Heures solaires uniquement
+    const h = pp.ts.getHours();
+    if (h < 7 || h >= 20) return;
+
+    // PME < seuil
+    if (pp.pmp_down === null || pp.pmp_down >= seuilPme) return;
+
+    // Volume RR > 0 (MA manuel confirmé)
     let bestVol = null, bestDiff = Infinity;
     volPoints.forEach(vp => {
       const diff = Math.abs(pp.ts - vp.ts);
       if (diff < bestDiff) { bestDiff = diff; bestVol = vp; }
     });
     if (!bestVol || bestDiff > 10 * 60 * 1000) return;
-
-    const vol = bestVol.vol_down_rr || 0;
-    if (vol < seuilVol) return;
+    const volRR = bestVol.vol_down_rr || 0;
+    if (volRR === 0) return;
 
     // Clé unique pour ce créneau (évite doublons)
-    const key = `${pp.ts.toISOString()}_${vol.toFixed(0)}`;
+    const key = `${pp.ts.toISOString()}_${volRR.toFixed(0)}`;
     if (alertedKeys.has(key)) return;
     alertedKeys.add(key);
 
-    const msg = `🚨 MA ACTIVÉ — ${pp.ts.toLocaleString('fr-FR')} | Vol: ${vol.toFixed(1)} MWh | PRE: ${pp.pre.toFixed(0)} €/MWh`;
+    const msg = `🟠 MA ACTIVÉ — ${pp.ts.toLocaleString('fr-FR')} | Vol RR: ${volRR.toFixed(1)} MWh | PME: ${pp.pmp_down.toFixed(0)} €/MWh`;
 
-    // Bannière dans le dashboard
     showAlertBanner(msg);
 
-    // Notification navigateur
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Dashboard MA — Activation détectée', {
-        body: `Vol: ${vol.toFixed(1)} MWh | PRE: ${pp.pre.toFixed(0)} €/MWh\n${pp.ts.toLocaleString('fr-FR')}`,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect fill="%230a0e14" width="32" height="32"/><text y="24" font-size="24">⚡</text></svg>'
+      new Notification('🟠 Dashboard MA — Bandeau orange détecté', {
+        body: `Vol RR: ${volRR.toFixed(1)} MWh | PME: ${pp.pmp_down.toFixed(0)} €/MWh\n${pp.ts.toLocaleString('fr-FR')}`,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect fill="%230a0e14" width="32" height="32"/><text y="24" font-size="24">🟠</text></svg>'
       });
     }
   });

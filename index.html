@@ -446,7 +446,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-left:16px;">
       <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;">Seuil PME mFRR ↓</label>
-      <input type="number" id="seuil-pre" value="-120" style="width:80px;background:var(--bg);border:1px solid var(--border);color:var(--red);padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;">
+      <input type="number" id="seuil-pre" value="-145" style="width:80px;background:var(--bg);border:1px solid var(--border);color:var(--red);padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim)">€/MWh</span>
     </div>
     <button onclick="toggleAutoRefresh()" id="btn-autorefresh" style="margin-left:16px;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.3);color:var(--green);padding:4px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;cursor:pointer;letter-spacing:0.08em;">
@@ -506,15 +506,21 @@
     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;">
       <span style="display:flex;align-items:center;gap:6px;">
         <span style="display:inline-block;width:12px;height:12px;background:rgba(255,140,0,0.6);border:1px solid rgba(255,140,0,0.9);border-radius:2px;"></span>
-        <span style="color:#ff8c00">🟠 mFRR activé (PME mFRR &lt; −100 + volume confirmé, heures solaires)</span>
+        <span style="color:#ff8c00">🟠 mFRR activé (PMP mFRR &lt; seuil + volume confirmé)</span>
       </span>
       <span style="display:flex;align-items:center;gap:6px;">
         <span style="display:inline-block;width:2px;height:12px;background:#ff4060;border-left:2px dashed #ff4060;"></span>
         <span style="color:#ff4060">🔴 Activation Tilt réelle</span>
       </span>
-      <span style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-        <span style="color:var(--text-dim);font-size:9px;">⚠ RTE peut ne pas respecter le merit order — bandeau orange ≠ activation garantie</span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:16px;height:2px;background:#ff8c00;"></span>
+        <span style="color:#ff8c00">PMP mFRR spécifique ↓</span>
       </span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:16px;height:2px;background:#a78bfa;"></span>
+        <span style="color:#a78bfa">MARI clearing ↓</span>
+      </span>
+      <span style="color:var(--text-dim);font-size:9px;margin-left:auto;">⚠ Merit order non garanti · MARI lancé 11/05</span>
     </div>
     <div class="chart-canvas-wrap" id="chart-prix-wrap">
       <div class="placeholder" id="placeholder-prix">Aucune donnée chargée</div>
@@ -584,6 +590,8 @@
 <script>
 // ─── ACTIVATIONS TILT (historique) ─────────────────────────
 const ACTIVATIONS_TILT = [
+  { date: '2026-05-01', heure: '16:46', duree: '59min',  label: '01/05 16h46' },
+  { date: '2026-04-29', heure: '17:56', duree: '42min',  label: '29/04 17h56' },
   { date: '2026-04-24', heure: '16:49', duree: '29min',  label: '24/04 16h49' },
   { date: '2026-04-24', heure: '10:28', duree: '2h46',   label: '24/04 10h28' },
   { date: '2026-04-23', heure: '10:44', duree: '35min',  label: '23/04 10h44' },
@@ -593,6 +601,7 @@ const ACTIVATIONS_TILT = [
   { date: '2026-03-27', heure: '16:06', duree: '54min',  label: '27/03 16h06' },
   { date: '2026-03-26', heure: '13:35', duree: '1h24',   label: '26/03 13h35' },
   { date: '2026-03-24', heure: '11:23', duree: '4h17',   label: '24/03 11h23' },
+  { date: '2026-03-18', heure: '11:35', duree: '55min',  label: '18/03 11h35' },
   { date: '2026-03-17', heure: '11:37', duree: '3h59',   label: '17/03 11h37' },
   { date: '2026-03-05', heure: '17:10', duree: '15min',  label: '05/03 17h10' },
   { date: '2026-03-02', heure: '17:10', duree: '10min',  label: '02/03 17h10' },
@@ -646,7 +655,26 @@ async function fetchWithRetry(url, retries = 3) {
 }
 
 async function fetchPrices(startDate, endDate) {
-  const url = `${GAS}?endpoint=imbalance_data&query=${encodeURIComponent('start_date=' + startDate + '&end_date=' + endDate)}`;
+  const q = encodeURIComponent(`start_date=${startDate}&end_date=${endDate}`).replace(/%2B/g, '%2B');
+  const url = `${GAS}?endpoint=prices&query=${q}`;
+  return fetchWithRetry(url);
+}
+
+async function fetchImbalance(startDate, endDate) {
+  const q = encodeURIComponent(`start_date=${startDate}&end_date=${endDate}`).replace(/%2B/g, '%2B');
+  const url = `${GAS}?endpoint=imbalance_data&query=${q}`;
+  return fetchWithRetry(url);
+}
+
+async function fetchMari(startDate, endDate) {
+  const q = encodeURIComponent(`start_date=${startDate}&end_date=${endDate}`).replace(/%2B/g, '%2B');
+  const url = `${GAS}?endpoint=standard_mfrr_data&query=${q}`;
+  return fetchWithRetry(url);
+}
+
+async function fetchVolumes(startDate, endDate) {
+  const q = encodeURIComponent(`start_date=${startDate}&end_date=${endDate}`).replace(/%2B/g, '%2B');
+  const url = `${GAS}?endpoint=volumes_per_reasons&query=${q}`;
   return fetchWithRetry(url);
 }
 
@@ -658,11 +686,6 @@ async function fetchBids(startDate, endDate) {
 
 async function fetchProcured(startDate, endDate) {
   const url = `${GAS}?endpoint=result_procured_reserves&query=${encodeURIComponent('start_date=' + startDate + '&end_date=' + endDate)}`;
-  return fetchWithRetry(url);
-}
-
-async function fetchVolumes(startDate, endDate) {
-  const url = `${GAS}?endpoint=volumes_per_reasons&query=${encodeURIComponent('start_date=' + startDate + '&end_date=' + endDate)}`;
   return fetchWithRetry(url);
 }
 
@@ -692,16 +715,19 @@ async function fetchAll() {
 
     const timeStart = document.getElementById('time-start')?.value || '00:00';
     const timeEnd   = document.getElementById('time-end')?.value   || '23:59';
-    const startISO  = encodeURIComponent(`${dateStart}T${timeStart}:00+02:00`);
-    const endISO    = encodeURIComponent(`${dateEnd}T${timeEnd}:00+02:00`);
+    const startISO  = `${dateStart}T${timeStart}:00+02:00`;
+    const endISO    = `${dateEnd}T${timeEnd}:00+02:00`;
 
-    const pricesData  = await fetchPrices(startISO, endISO);
-    setStatus('loading', 'Prix OK — récupération des volumes…');
-    const volumesData = await fetchVolumes(startISO, endISO);
+    const pricesData   = await fetchPrices(startISO, endISO);
+    setStatus('loading', 'Prix mFRR OK — récupération PRE…');
+    const imbalanceData = await fetchImbalance(startISO, endISO);
+    setStatus('loading', 'PRE OK — récupération des volumes…');
+    const volumesData  = await fetchVolumes(startISO, endISO);
+    setStatus('loading', 'Volumes OK — récupération MARI…');
+    let mariData = null;
+    try { mariData = await fetchMari(startISO, endISO); } catch(e) { console.warn('MARI non disponible:', e.message); }
     setStatus('loading', 'Données reçues — rendu en cours…');
-    console.log('PRICES:', JSON.stringify(pricesData).substring(0, 300));
-    console.log('VOLUMES:', JSON.stringify(volumesData).substring(0, 300));
-    const { pp, vp } = renderDashboard(pricesData, volumesData, dateStart, dateEnd);
+    const { pp, vp } = renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateStart, dateEnd);
     if (isWatching) checkAlerts(pp, vp);
     setStatus('ok', `Données chargées — ${dateStart} → ${dateEnd}`);
     document.getElementById('last-update').textContent = `Màj : ${new Date().toLocaleTimeString('fr-FR')}`;
@@ -715,21 +741,32 @@ async function fetchAll() {
 }
 
 // ─── RENDER ────────────────────────────────────────────────
-function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
-  // Parse prix (API v5)
+function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateStart, dateEnd) {
+  // Parse prix détaillés (endpoint prices) - PMP/PME par type de réserve
   const pricePoints = [];
-  const imbalance = pricesData?.imbalance_date || pricesData?.imbalance_data || [];
-  imbalance.forEach(d => {
-    (d.values || []).forEach(v => {
-      pricePoints.push({
-        ts: new Date(v.start_date),
-        pre: v.imbalance ?? v.imbalance_price ?? null,
-        pmp_down: v.negative_imbalance_settlement_price ?? v.downward_price ?? null,
-        pmp_up: v.positive_imbalance_settlement_price ?? v.upward_price ?? null,
-        trend: v.system_trend ?? v.trend ?? null
-      });
+  const pricesRaw = pricesData?.prices?.[0]?.values || [];
+  pricesRaw.forEach(v => {
+    pricePoints.push({
+      ts:           new Date(v.start_date),
+      pre:          null, // sera rempli depuis imbalanceData
+      pmp_down:     v.downward_weighted_average_price          ?? null,
+      pmp_up:       v.upward_weighted_average_price            ?? null,
+      pme_down:     v.downward_marginal_price                  ?? null,
+      pme_up:       v.upward_marginal_price                    ?? null,
+      pmp_mfrr:     v.downward_weighted_average_price_mfrr     ?? null, // ← vrai PMEb mFRR spécifique
+      pmp_rr:       v.downward_weighted_average_price_rr       ?? null,
+      pmp_afrr:     v.downward_weighted_average_price_afrr_activated_for_fr ?? null,
     });
   });
+
+  // Enrichir avec le PRE depuis imbalance_data
+  const imbalanceRaw = imbalanceData?.imbalance_data?.[0]?.values || [];
+  imbalanceRaw.forEach(v => {
+    const ts = new Date(v.start_date).getTime();
+    const pp = pricePoints.find(p => p.ts.getTime() === ts);
+    if (pp) pp.pre = v.negative_imbalance_settlement_price ?? null;
+  });
+
   pricePoints.sort((a,b) => a.ts - b.ts);
 
   // Parse volumes (API v5 — structure "reasons")
@@ -752,7 +789,22 @@ function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
   });
   volPoints.sort((a,b) => a.ts - b.ts);
 
-  // pour montrer le fonctionnement (à commenter en prod)
+  // Parse MARI (standard_mfrr_data)
+  const mariPoints = [];
+  const mariRaw = mariData?.mari?.mari_mesures || [];
+  mariRaw.forEach(v => {
+    if ((v.direction || '').toUpperCase() === 'DOWNWARD') {
+      mariPoints.push({
+        ts:            new Date(v.start_date),
+        vol_sa:        v.total_satisfied_need_SA  ?? 0,
+        vol_da:        v.total_satisfied_need_DA  ?? 0,
+        clearing_price: v.clearing_price          ?? null,
+        settlement:    v.settlement_price_current ?? null,
+      });
+    }
+  });
+  mariPoints.sort((a,b) => a.ts - b.ts);
+  console.log('MARI parsed:', mariPoints.length, 'points ↓');
   let usingDemo = false;
   if (pricePoints.length === 0) {
     usingDemo = true;
@@ -788,13 +840,16 @@ function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
   }
 
   // Zone 🟠 Orange uniquement : PME < -100 + solaire + volume RR > 0 → MA manuel confirmé
+  const seuilPme = parseFloat(document.getElementById('seuil-pre').value) || -145;
   const orionZones = [];
   let ozStart = null;
   pricePoints.forEach((p, i) => {
     const sol = p.ts.getHours() >= 7 && p.ts.getHours() < 20;
     const vol = getVolForPoint(p);
     const hasMA = vol && (vol.vol_down_rr || 0) > 0;
-    const ok  = sol && p.pmp_down !== null && p.pmp_down < -100 && hasMA;
+    // Zone 🟠 Orange : PMP mFRR < -145 + solaire + volume mFRR > 0 → vrai PMEb mFRR spécifique
+    const pmpMfrr = p.pmp_mfrr !== null ? p.pmp_mfrr : p.pmp_down;
+    const ok  = sol && pmpMfrr !== null && pmpMfrr < seuilPme && hasMA;
     if (ok  && ozStart === null) ozStart = i;
     if (!ok && ozStart !== null) { orionZones.push([ozStart, i-1]); ozStart = null; }
   });
@@ -922,28 +977,42 @@ function renderDashboard(pricesData, volumesData, dateStart, dateEnd) {
           borderDash: [3,3]
         },
         {
-          label: 'Offre Tilt min (-120)',
-          data: pricePoints.map(() => -120),
-          borderColor: 'rgba(255,140,0,0.5)',
-          borderWidth: 1,
-          borderDash: [6,4],
+          label: 'PMP mFRR spéc. ↓',
+          data: pricePoints.map(p => p.pmp_mfrr),
+          borderColor: '#ff8c00',
+          borderWidth: 2,
           pointRadius: 0,
+          tension: 0.3,
           fill: false,
-          tension: 0
         },
         {
-          label: 'Offre Tilt max (-160)',
-          data: pricePoints.map(() => -160),
-          borderColor: 'rgba(255,64,96,0.4)',
-          borderWidth: 1,
-          borderDash: [6,4],
+          label: 'MARI clearing ↓',
+          data: (() => {
+            return pricePoints.map(p => {
+              const m = mariPoints.find(m => Math.abs(m.ts - p.ts) < 8*60*1000);
+              return m ? m.clearing_price : null;
+            });
+          })(),
+          borderColor: '#a78bfa',
+          borderWidth: 1.5,
           pointRadius: 0,
+          tension: 0,
           fill: false,
-          tension: 0
-        }
+          spanGaps: false,
+        },
+        {
+          label: 'PMP ↓ global',
+          data: pricePoints.map(p => p.pmp_down),
+          borderColor: '#ff4060',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+          borderDash: [3,3]
+        },
       ]
     },
-    options: chartOptions('€/MWh', true)
+    options: chartOptions('€/MWh', true, -500, 500)
   });
 
   // CHART 2 : Volumes RR
@@ -1018,8 +1087,9 @@ function renderTable(pricePoints, volPoints, isDemo) {
     const h = pp.ts.getHours();
     const heureSolaire = h >= 7 && h < 20;
 
-    // Zone 🟠 : PME < -100 + MA réel activé
-    const orionEligible = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -100 && volRR > 0;
+    // Zone 🟠 : PME < -145 + mFRR activé + solaire
+    const pmpMfrrVal = pp.pmp_mfrr !== null && pp.pmp_mfrr !== undefined ? pp.pmp_mfrr : pp.pmp_down;
+    const orionEligible = heureSolaire && pmpMfrrVal !== null && pmpMfrrVal < -145 && volRR > 0;
 
     // Zone 🟡 : PME < -100 mais aFRR seul (pas de RR)
     const zoneGrise = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -100 && volRR === 0;
@@ -1246,7 +1316,7 @@ function showAlertBanner(msg) {
 }
 
 // ─── HELPERS ───────────────────────────────────────────────
-function chartOptions(unit, showZeroLine = false) {
+function chartOptions(unit, showZeroLine = false, yMin = null, yMax = null) {
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -1280,6 +1350,8 @@ function chartOptions(unit, showZeroLine = false) {
       y: {
         ticks: { color: '#5a7090', font: { family: 'IBM Plex Mono', size: 9 } },
         grid: { color: 'rgba(30,42,58,0.8)' },
+        ...(yMin !== null ? { min: yMin } : {}),
+        ...(yMax !== null ? { max: yMax } : {}),
         ...(showZeroLine ? {
           afterDataLimits(scale) {
             scale.max = Math.max(scale.max, 0);

@@ -517,10 +517,6 @@
         <span style="color:#ff8c00">PMP mFRR spécifique ↓</span>
       </span>
       <span style="display:flex;align-items:center;gap:6px;">
-        <span style="display:inline-block;width:16px;height:2px;background:rgba(255,64,96,0.9);border-top:2px dotted rgba(255,64,96,0.9);"></span>
-        <span style="color:rgba(255,64,96,0.9)">PME baisse (marginal)</span>
-      </span>
-      <span style="display:flex;align-items:center;gap:6px;">
         <span style="display:inline-block;width:16px;height:2px;background:#a78bfa;"></span>
         <span style="color:#a78bfa">MARI clearing ↓</span>
       </span>
@@ -534,7 +530,7 @@
 
   <div class="chart-card">
     <div class="chart-header">
-      <span class="chart-title">Volumes activés à la baisse (mFRR spécifique + MARI)</span>
+      <span class="chart-title">Volumes nationaux activés à la baisse — mFRR spéc. + MARI (MWh)</span>
       <span class="chart-badge" style="background:rgba(255,64,96,0.1);color:var(--red)">MWh</span>
     </div>
     <div class="chart-canvas-wrap" id="chart-vol-wrap">
@@ -780,14 +776,14 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
     (d.values || []).forEach(v => {
       volPoints.push({
         ts: new Date(v.start_date),
-        vol_down_rr:   v.downward_volume_balancing  ?? 0,
-        vol_up_rr:     v.upward_volume_balancing    ?? 0,
-        vol_down_afrr: v.downward_volume_afrr       ?? v.downward_volume_frequency ?? 0,
-        vol_up_afrr:   v.upward_volume_afrr         ?? v.upward_volume_frequency   ?? 0,
-        vol_down_cong: v.downward_volume_congestion ?? 0,
-        vol_down_total: (v.downward_volume_balancing ?? 0)
+        vol_down_rr:   (v.downward_volume_balancing  ?? 0) / 4,
+        vol_up_rr:     (v.upward_volume_balancing    ?? 0) / 4,
+        vol_down_afrr: (v.downward_volume_afrr       ?? v.downward_volume_frequency ?? 0) / 4,
+        vol_up_afrr:   (v.upward_volume_afrr         ?? v.upward_volume_frequency   ?? 0) / 4,
+        vol_down_cong: (v.downward_volume_congestion ?? 0) / 4,
+        vol_down_total: ((v.downward_volume_balancing ?? 0)
                       + (v.downward_volume_afrr ?? v.downward_volume_frequency ?? 0)
-                      + (v.downward_volume_congestion ?? 0)
+                      + (v.downward_volume_congestion ?? 0)) / 4
       });
     });
   });
@@ -799,11 +795,11 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
   mariRaw.forEach(v => {
     if ((v.direction || '').toUpperCase() === 'DOWNWARD') {
       mariPoints.push({
-        ts:             new Date(v.start_date),
-        vol_sa:         v.total_activated_volume_SA ?? v.total_satisfied_need_SA ?? 0,
-        vol_da:         v.total_activated_volume_DA ?? v.total_satisfied_need_DA ?? 0,
-        clearing_price: v.clearing_price            ?? null,
-        settlement:     v.settlement_price_current  ?? null,
+        ts:            new Date(v.start_date),
+        vol_sa:        v.total_satisfied_need_SA  ?? 0,
+        vol_da:        v.total_satisfied_need_DA  ?? 0,
+        clearing_price: v.clearing_price          ?? null,
+        settlement:    v.settlement_price_current ?? null,
       });
     }
   });
@@ -1041,7 +1037,7 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
       labels: labelsV,
       datasets: [
         {
-          label: 'Vol mFRR spéc. ↓',
+          label: 'Vol mFRR spéc. ↓ (MWh)',
           data: volPoints.map(p => p.vol_down_rr || 0),
           backgroundColor: 'rgba(255,64,96,0.6)',
           borderColor: '#ff4060',
@@ -1049,10 +1045,10 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
           stack: 'vol'
         },
         {
-          label: 'Vol MARI ↓',
+          label: 'Vol MARI ↓ (MWh)',
           data: volPoints.map(p => {
             const m = mariPoints.find(m => Math.abs(m.ts - p.ts) < 8*60*1000);
-            return m ? ((m.vol_sa || 0) + (m.vol_da || 0)) : 0;
+            return m ? (((m.vol_sa || 0) + (m.vol_da || 0)) / 4) : 0;
           }),
           backgroundColor: 'rgba(167,139,250,0.6)',
           borderColor: '#a78bfa',

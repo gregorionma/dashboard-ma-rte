@@ -530,7 +530,7 @@
 
   <div class="chart-card">
     <div class="chart-header">
-      <span class="chart-title">Volumes activés à la baisse (mFRR spécifique)</span>
+      <span class="chart-title">Volumes nationaux activés à la baisse — mFRR spéc. + MARI (MWh)</span>
       <span class="chart-badge" style="background:rgba(255,64,96,0.1);color:var(--red)">MWh</span>
     </div>
     <div class="chart-canvas-wrap" id="chart-vol-wrap">
@@ -1039,13 +1039,27 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
     type: 'bar',
     data: {
       labels: labelsV,
-      datasets: [{
-        label: 'Vol mFRR ↓',
-        data: volPoints.map(p => p.vol_down_rr || 0),
-        backgroundColor: 'rgba(255,64,96,0.6)',
-        borderColor: '#ff4060',
-        borderWidth: 1
-      }]
+      datasets: [
+        {
+          label: 'Vol mFRR spéc. ↓ (MWh)',
+          data: volPoints.map(p => p.vol_down_rr || 0),
+          backgroundColor: 'rgba(255,64,96,0.6)',
+          borderColor: '#ff4060',
+          borderWidth: 1,
+          stack: 'vol'
+        },
+        {
+          label: 'Vol MARI ↓ (MWh)',
+          data: volPoints.map(p => {
+            const m = mariPoints.find(m => Math.abs(m.ts - p.ts) < 8*60*1000);
+            return m ? (((m.vol_sa || 0) + (m.vol_da || 0)) / 4) : 0;
+          }),
+          backgroundColor: 'rgba(167,139,250,0.6)',
+          borderColor: '#a78bfa',
+          borderWidth: 1,
+          stack: 'vol'
+        }
+      ]
     },
     options: chartOptions('MWh')
   });

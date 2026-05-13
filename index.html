@@ -530,7 +530,7 @@
 
   <div class="chart-card">
     <div class="chart-header">
-      <span class="chart-title">Volumes nationaux activés à la baisse — mFRR spéc. + MARI (MWh)</span>
+      <span class="chart-title">Volumes activés à la baisse (mFRR spécifique)</span>
       <span class="chart-badge" style="background:rgba(255,64,96,0.1);color:var(--red)">MWh</span>
     </div>
     <div class="chart-canvas-wrap" id="chart-vol-wrap">
@@ -590,21 +590,28 @@
 <script>
 // ─── ACTIVATIONS TILT (historique) ─────────────────────────
 const ACTIVATIONS_TILT = [
-  { date: '2026-05-01', heure: '16:46', duree: '59min',  label: '01/05 16h46' },
-  { date: '2026-04-29', heure: '17:56', duree: '42min',  label: '29/04 17h56' },
-  { date: '2026-04-24', heure: '16:49', duree: '29min',  label: '24/04 16h49' },
-  { date: '2026-04-24', heure: '10:28', duree: '2h46',   label: '24/04 10h28' },
-  { date: '2026-04-23', heure: '10:44', duree: '35min',  label: '23/04 10h44' },
-  { date: '2026-04-22', heure: '15:18', duree: '51min',  label: '22/04 15h18' },
-  { date: '2026-04-20', heure: '16:23', duree: '1h21',   label: '20/04 16h23' },
-  { date: '2026-03-30', heure: '11:59', duree: '16min',  label: '30/03 11h59' },
-  { date: '2026-03-27', heure: '16:06', duree: '54min',  label: '27/03 16h06' },
-  { date: '2026-03-26', heure: '13:35', duree: '1h24',   label: '26/03 13h35' },
-  { date: '2026-03-24', heure: '11:23', duree: '4h17',   label: '24/03 11h23' },
-  { date: '2026-03-18', heure: '11:35', duree: '55min',  label: '18/03 11h35' },
-  { date: '2026-03-17', heure: '11:37', duree: '3h59',   label: '17/03 11h37' },
-  { date: '2026-03-05', heure: '17:10', duree: '15min',  label: '05/03 17h10' },
-  { date: '2026-03-02', heure: '17:10', duree: '10min',  label: '02/03 17h10' },
+  { date: '2026-05-13', heure: '15:20', duree_min: 15,  label: '13/05 15h20' },
+  { date: '2026-05-13', heure: '13:20', duree_min: 105, label: '13/05 13h20' },
+  { date: '2026-05-13', heure: '12:20', duree_min: 15,  label: '13/05 12h20' },
+  { date: '2026-05-13', heure: '11:50', duree_min: 15,  label: '13/05 11h50' },
+  { date: '2026-05-12', heure: '17:20', duree_min: 30,  label: '12/05 17h20' },
+  { date: '2026-05-12', heure: '15:20', duree_min: 60,  label: '12/05 15h20' },
+  { date: '2026-05-12', heure: '10:20', duree_min: 45,  label: '12/05 10h20' },
+  { date: '2026-05-01', heure: '16:46', duree_min: 59,  label: '01/05 16h46' },
+  { date: '2026-04-29', heure: '17:56', duree_min: 42,  label: '29/04 17h56' },
+  { date: '2026-04-24', heure: '16:49', duree_min: 29,  label: '24/04 16h49' },
+  { date: '2026-04-24', heure: '10:28', duree_min: 166, label: '24/04 10h28' },
+  { date: '2026-04-23', heure: '10:44', duree_min: 35,  label: '23/04 10h44' },
+  { date: '2026-04-22', heure: '15:18', duree_min: 51,  label: '22/04 15h18' },
+  { date: '2026-04-20', heure: '16:23', duree_min: 81,  label: '20/04 16h23' },
+  { date: '2026-03-30', heure: '11:59', duree_min: 16,  label: '30/03 11h59' },
+  { date: '2026-03-27', heure: '16:06', duree_min: 54,  label: '27/03 16h06' },
+  { date: '2026-03-26', heure: '13:35', duree_min: 84,  label: '26/03 13h35' },
+  { date: '2026-03-24', heure: '11:23', duree_min: 257, label: '24/03 11h23' },
+  { date: '2026-03-18', heure: '11:35', duree_min: 55,  label: '18/03 11h35' },
+  { date: '2026-03-17', heure: '11:37', duree_min: 239, label: '17/03 11h37' },
+  { date: '2026-03-05', heure: '17:10', duree_min: 15,  label: '05/03 17h10' },
+  { date: '2026-03-02', heure: '17:10', duree_min: 10,  label: '02/03 17h10' },
 ];
 let token = null;
 let chartPrix = null, chartVol = null, chartSplit = null, chartBids = null, chartProcured = null;
@@ -784,6 +791,7 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
         vol_down_total: ((v.downward_volume_balancing ?? 0)
                       + (v.downward_volume_afrr ?? v.downward_volume_frequency ?? 0)
                       + (v.downward_volume_congestion ?? 0)) / 4
+                      + (v.downward_volume_congestion ?? 0)
       });
     });
   });
@@ -866,63 +874,69 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
   });
   if (czStart !== null) congZones.push([czStart, pricePoints.length-1]);
 
-  // Plugin marqueurs Tilt : lignes verticales rouges sur les activations réelles
+  // Plugin bandeaux Tilt : rectangles rouges de la durée réelle de l'activation
   const tiltPlugin = {
     id: 'tiltMarkers',
     afterDraw(chart) {
       const { ctx, chartArea, scales } = chart;
       if (!chartArea) return;
       const xScale = scales.x;
-      ctx.save();
-
-      // Filtrer les activations Tilt dans la fenêtre affichée
       const firstTs = pricePoints[0]?.ts;
       const lastTs  = pricePoints[pricePoints.length-1]?.ts;
       if (!firstTs || !lastTs) return;
 
       ACTIVATIONS_TILT.forEach(act => {
-        const ts = new Date(`${act.date}T${act.heure}:00+02:00`);
-        if (ts < firstTs || ts > lastTs) return;
+        const tsStart = new Date(`${act.date}T${act.heure}:00+02:00`);
+        const tsEnd   = new Date(tsStart.getTime() + act.duree_min * 60 * 1000);
+        if (tsEnd < firstTs || tsStart > lastTs) return;
 
-        // Trouver l'index le plus proche
-        let bestIdx = 0, bestDiff = Infinity;
+        // Trouver les indices x les plus proches pour début et fin
+        const clampedStart = tsStart < firstTs ? firstTs : tsStart;
+        const clampedEnd   = tsEnd   > lastTs  ? lastTs  : tsEnd;
+
+        let idxStart = 0, idxEnd = pricePoints.length - 1;
+        let diffS = Infinity, diffE = Infinity;
         pricePoints.forEach((p, i) => {
-          const diff = Math.abs(p.ts - ts);
-          if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+          const dS = Math.abs(p.ts - clampedStart);
+          const dE = Math.abs(p.ts - clampedEnd);
+          if (dS < diffS) { diffS = dS; idxStart = i; }
+          if (dE < diffE) { diffE = dE; idxEnd   = i; }
         });
 
-        const x = xScale.getPixelForValue(bestIdx);
+        const x1 = xScale.getPixelForValue(idxStart);
+        const x2 = xScale.getPixelForValue(idxEnd);
+        const width = Math.max(x2 - x1, 2);
 
-        // Ligne verticale rouge
+        // Bandeau rouge semi-transparent
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,64,96,0.18)';
+        ctx.fillRect(x1, chartArea.top, width, chartArea.height);
+        // Bord gauche rouge
         ctx.strokeStyle = '#ff4060';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 3]);
-        ctx.beginPath();
-        ctx.moveTo(x, chartArea.top);
-        ctx.lineTo(x, chartArea.bottom);
-        ctx.stroke();
+        ctx.lineWidth = 1.5;
         ctx.setLineDash([]);
-
+        ctx.beginPath();
+        ctx.moveTo(x1, chartArea.top);
+        ctx.lineTo(x1, chartArea.bottom);
+        ctx.stroke();
         // Triangle en haut
         ctx.fillStyle = '#ff4060';
         ctx.beginPath();
-        ctx.moveTo(x, chartArea.top + 6);
-        ctx.lineTo(x - 5, chartArea.top - 2);
-        ctx.lineTo(x + 5, chartArea.top - 2);
+        ctx.moveTo(x1, chartArea.top + 6);
+        ctx.lineTo(x1 - 5, chartArea.top - 2);
+        ctx.lineTo(x1 + 5, chartArea.top - 2);
         ctx.closePath();
         ctx.fill();
-
         // Label
         ctx.fillStyle = '#ff4060';
         ctx.font = '8px IBM Plex Mono, monospace';
         ctx.save();
-        ctx.translate(x + 4, chartArea.top + 40);
+        ctx.translate(x1 + 4, chartArea.top + 40);
         ctx.rotate(Math.PI / 2);
-        ctx.fillText(act.label + ' (' + act.duree + ')', 0, 0);
+        ctx.fillText(act.label, 0, 0);
+        ctx.restore();
         ctx.restore();
       });
-
-      ctx.restore();
     }
   };
   const bandeauPlugin = {
@@ -977,16 +991,6 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
           borderDash: [3,3]
         },
         {
-          label: 'PME baisse (marginal)',
-          data: pricePoints.map(p => p.pme_down),
-          borderColor: 'rgba(255,64,96,0.9)',
-          borderWidth: 1.5,
-          pointRadius: 0,
-          tension: 0,
-          fill: false,
-          borderDash: [2,2]
-        },
-        {
           label: 'PMP mFRR spéc. ↓',
           data: pricePoints.map(p => p.pmp_mfrr),
           borderColor: '#ff8c00',
@@ -1035,27 +1039,13 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
     type: 'bar',
     data: {
       labels: labelsV,
-      datasets: [
-        {
-          label: 'Vol mFRR spéc. ↓ (MWh)',
-          data: volPoints.map(p => p.vol_down_rr || 0),
-          backgroundColor: 'rgba(255,64,96,0.6)',
-          borderColor: '#ff4060',
-          borderWidth: 1,
-          stack: 'vol'
-        },
-        {
-          label: 'Vol MARI ↓ (MWh)',
-          data: volPoints.map(p => {
-            const m = mariPoints.find(m => Math.abs(m.ts - p.ts) < 8*60*1000);
-            return m ? (((m.vol_sa || 0) + (m.vol_da || 0)) / 4) : 0;
-          }),
-          backgroundColor: 'rgba(167,139,250,0.6)',
-          borderColor: '#a78bfa',
-          borderWidth: 1,
-          stack: 'vol'
-        }
-      ]
+      datasets: [{
+        label: 'Vol mFRR ↓',
+        data: volPoints.map(p => p.vol_down_rr || 0),
+        backgroundColor: 'rgba(255,64,96,0.6)',
+        borderColor: '#ff4060',
+        borderWidth: 1
+      }]
     },
     options: chartOptions('MWh')
   });
@@ -1091,11 +1081,12 @@ function renderDashboard(pricesData, imbalanceData, volumesData, mariData, dateS
     options: chartOptions('MWh')
   });
 
-  renderTable(pricePoints, volPoints, usingDemo);
+  renderTable(pricePoints, volPoints, mariPoints, usingDemo);
   return { pp: pricePoints, vp: volPoints };
 }
 
-function renderTable(pricePoints, volPoints, isDemo) {
+function renderTable(pricePoints, volPoints, mariPoints, isDemo) {
+  const seuilMari = -100;
   const rows = [];
   pricePoints.forEach(pp => {
     if (pp.pre === null) return;
@@ -1108,21 +1099,23 @@ function renderTable(pricePoints, volPoints, isDemo) {
     const volAfrr = bestVol && bestDiff < 7*60*1000 ? (bestVol.vol_down_afrr || 0) : 0;
     const volCong = bestVol && bestDiff < 7*60*1000 ? (bestVol.vol_down_cong || 0) : 0;
 
+    // MARI
+    const mariPt = (mariPoints || []).find(m => Math.abs(m.ts - pp.ts) < 8*60*1000);
+    const mariClearing = mariPt?.clearing_price ?? null;
+    const mariActif = mariClearing !== null && mariClearing < seuilMari;
+
     const h = pp.ts.getHours();
     const heureSolaire = h >= 7 && h < 20;
 
-    // Zone 🟠 : PME < -145 + mFRR activé + solaire
-    const pmpMfrrVal = pp.pmp_mfrr !== null && pp.pmp_mfrr !== undefined ? pp.pmp_mfrr : pp.pmp_down;
+    // 🟠 mFRR : PMP mFRR spécifique < -145 + volume > 0 + solaire
+    const pmpMfrrVal = pp.pmp_mfrr !== null && pp.pmp_mfrr !== undefined ? pp.pmp_mfrr : null;
     const orionEligible = heureSolaire && pmpMfrrVal !== null && pmpMfrrVal < -145 && volRR > 0;
 
-    // Zone 🟡 : PME < -100 mais aFRR seul (pas de RR)
     const zoneGrise = heureSolaire && pp.pmp_down !== null && pp.pmp_down < -100 && volRR === 0;
-
-    // Zone 🔵 : congestion probable
     const congestionOrion = heureSolaire && pp.pre > 50 && pp.pmp_down !== null && pp.pmp_down < -50;
 
-    if (pp.pre < -50 || volRR > 0 || volAfrr > 0 || orionEligible || zoneGrise || congestionOrion) {
-      rows.push({ ts: pp.ts, pre: pp.pre, pmp_down: pp.pmp_down, volRR, volAfrr, volCong, orionEligible, zoneGrise, congestionOrion, heureSolaire });
+    if (volRR > 0 || volAfrr > 0 || orionEligible || zoneGrise || congestionOrion || mariActif) {
+      rows.push({ ts: pp.ts, pre: pp.pre, pmp_down: pp.pmp_down, pmp_mfrr: pmpMfrrVal, volRR, volAfrr, volCong, orionEligible, zoneGrise, congestionOrion, heureSolaire, mariClearing, mariActif });
     }
   });
 
@@ -1133,41 +1126,49 @@ function renderTable(pricePoints, volPoints, isDemo) {
   }
 
   const orionCount = rows.filter(r => r.orionEligible).length;
+  const mariCount  = rows.filter(r => r.mariActif).length;
 
   let html = `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.08em;display:flex;gap:20px;flex-wrap:wrap;">
     <span>${rows.length} créneaux sur la période</span>
-    <span style="color:#ff8c00">🟠 ${orionCount} mFRR activé (volume confirmé, PME&lt;seuil)</span>
+    <span style="color:#ff8c00">🟠 ${orionCount} mFRR activé (PMP mFRR &lt; −145)</span>
+    <span style="color:#a78bfa">🟣 ${mariCount} MARI &lt; −100 €/MWh</span>
     <span style="color:rgba(255,140,0,0.5);font-size:9px;">⚠ RTE peut ne pas respecter le merit order</span>
   </div>
   <table>
     <thead><tr>
       <th>Horodatage</th>
       <th>PRE (€/MWh)</th>
-      <th>PMP ↓ (€/MWh)</th>
-      <th>Vol MA ↓ (MWh)</th>
+      <th>PMP mFRR ↓</th>
+      <th>Vol mFRR ↓ (MWh)</th>
       <th>Vol aFRR ↓ (MWh)</th>
-      <th>Vol Cong. ↓ (MWh)</th>
-      <th>Signal MA</th>
+      <th>MARI clearing</th>
+      <th>Signal</th>
     </tr></thead><tbody>`;
 
   rows.slice().reverse().forEach(r => {
     const dateStr  = r.ts.toLocaleString('fr-FR');
     const preStr   = r.pre !== null ? r.pre.toFixed(1) : '—';
     const preClass = r.pre < 0 ? 'price-neg' : 'price-pos';
-    const pmpStr   = r.pmp_down !== null ? r.pmp_down.toFixed(1) : '—';
-    const signal   = r.orionEligible                     ? `<span class="tag-oui">🟠 mFRR ACTIVÉ</span>` :
-                     r.volRR > 0                          ? `<span class="tag-oui">mFRR activé</span>` :
-                     r.pre < -150                         ? `<span class="tag-fort">PRE FORT</span>` :
-                     r.volAfrr > 0                        ? `<span class="tag-non">aFRR seul</span>` :
-                                                            `<span class="tag-non">—</span>`;
-    const rowStyle = r.orionEligible ? ' style="background:rgba(255,140,0,0.05)"' : '';
+    const pmpMfrrStr = r.pmp_mfrr !== null ? r.pmp_mfrr.toFixed(1) : '—';
+    const pmpMfrrClass = r.pmp_mfrr !== null && r.pmp_mfrr < -145 ? 'price-neg' : '';
+    const mariStr = r.mariClearing !== null
+      ? `<span style="color:${r.mariActif ? '#a78bfa' : 'var(--text-dim)'}">${r.mariActif ? '🟣 ' : ''}${r.mariClearing.toFixed(1)}</span>`
+      : '—';
+    const signal = r.orionEligible   ? `<span class="tag-oui">🟠 mFRR ACTIVÉ</span>` :
+                   r.mariActif       ? `<span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span>` :
+                   r.volRR > 0       ? `<span class="tag-oui">mFRR ↓</span>` :
+                   r.volAfrr > 0     ? `<span class="tag-non">aFRR seul</span>` :
+                                       `<span class="tag-non">—</span>`;
+    const rowStyle = r.orionEligible ? ' style="background:rgba(255,140,0,0.05)"'
+                   : r.mariActif     ? ' style="background:rgba(167,139,250,0.05)"'
+                   : '';
     html += `<tr${rowStyle}>
       <td>${dateStr}</td>
       <td class="${preClass}">${preStr}</td>
-      <td>${pmpStr}</td>
+      <td class="${pmpMfrrClass}">${pmpMfrrStr}</td>
       <td>${r.volRR   > 0 ? r.volRR.toFixed(1)   : '—'}</td>
       <td>${r.volAfrr > 0 ? r.volAfrr.toFixed(1) : '—'}</td>
-      <td>${r.volCong > 0 ? r.volCong.toFixed(1) : '—'}</td>
+      <td>${mariStr}</td>
       <td>${signal}</td>
     </tr>`;
   });

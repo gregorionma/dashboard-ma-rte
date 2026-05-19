@@ -552,6 +552,23 @@
 
   <div class="chart-card" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
     <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);text-align:center;letter-spacing:0.1em;text-transform:uppercase;">Détail de vos activations</div>
+    <div id="tilt-count" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--accent);font-weight:700;">—</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);">activations Tilt chargées</div>
+    <button id="btn-sync-tilt" onclick="syncTiltNow()" style="
+      background:transparent;
+      border:1px solid var(--accent);
+      color:var(--accent);
+      font-family:'IBM Plex Mono',monospace;
+      font-size:10px;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+      padding:6px 16px;
+      border-radius:2px;
+      cursor:pointer;
+      transition:all 0.15s;
+    " onmouseover="this.style.background='rgba(0,200,255,0.1)'" onmouseout="this.style.background='transparent'">
+      ↻ Sync Tilt maintenant
+    </button>
     <a href="https://app.tilt-energy.com/flexibility" target="_blank" style="
       display:inline-block;
       background:var(--accent);
@@ -568,7 +585,7 @@
     " onmouseover="this.style.background='#33d4ff'" onmouseout="this.style.background='var(--accent)'">
       ▶ Ouvrir Tilt Energy
     </a>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);text-align:center;max-width:200px;line-height:1.5;">
+    <div id="tilt-sync-status" style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);text-align:center;max-width:200px;line-height:1.5;">
       Offres mFRR / RR · Prix de clearing · Détail par site
     </div>
   </div>
@@ -588,31 +605,69 @@
 </footer>
 
 <script>
-// ─── ACTIVATIONS TILT (historique) ─────────────────────────
-const ACTIVATIONS_TILT = [
-  { date: '2026-05-13', heure: '15:20', duree_min: 15,  label: '13/05 15h20' },
-  { date: '2026-05-13', heure: '13:20', duree_min: 105, label: '13/05 13h20' },
-  { date: '2026-05-13', heure: '12:20', duree_min: 15,  label: '13/05 12h20' },
-  { date: '2026-05-13', heure: '11:50', duree_min: 15,  label: '13/05 11h50' },
-  { date: '2026-05-12', heure: '17:20', duree_min: 30,  label: '12/05 17h20' },
-  { date: '2026-05-12', heure: '15:20', duree_min: 60,  label: '12/05 15h20' },
-  { date: '2026-05-12', heure: '10:20', duree_min: 45,  label: '12/05 10h20' },
-  { date: '2026-05-01', heure: '16:46', duree_min: 59,  label: '01/05 16h46' },
-  { date: '2026-04-29', heure: '17:56', duree_min: 42,  label: '29/04 17h56' },
-  { date: '2026-04-24', heure: '16:49', duree_min: 29,  label: '24/04 16h49' },
-  { date: '2026-04-24', heure: '10:28', duree_min: 166, label: '24/04 10h28' },
-  { date: '2026-04-23', heure: '10:44', duree_min: 35,  label: '23/04 10h44' },
-  { date: '2026-04-22', heure: '15:18', duree_min: 51,  label: '22/04 15h18' },
-  { date: '2026-04-20', heure: '16:23', duree_min: 81,  label: '20/04 16h23' },
-  { date: '2026-03-30', heure: '11:59', duree_min: 16,  label: '30/03 11h59' },
-  { date: '2026-03-27', heure: '16:06', duree_min: 54,  label: '27/03 16h06' },
-  { date: '2026-03-26', heure: '13:35', duree_min: 84,  label: '26/03 13h35' },
-  { date: '2026-03-24', heure: '11:23', duree_min: 257, label: '24/03 11h23' },
-  { date: '2026-03-18', heure: '11:35', duree_min: 55,  label: '18/03 11h35' },
-  { date: '2026-03-17', heure: '11:37', duree_min: 239, label: '17/03 11h37' },
-  { date: '2026-03-05', heure: '17:10', duree_min: 15,  label: '05/03 17h10' },
-  { date: '2026-03-02', heure: '17:10', duree_min: 10,  label: '02/03 17h10' },
-];
+// ─── ACTIVATIONS TILT — chargées dynamiquement depuis Google Sheet ──
+let ACTIVATIONS_TILT = []; // sera rempli au chargement
+
+async function syncTiltNow() {
+  const btn    = document.getElementById('btn-sync-tilt');
+  const status = document.getElementById('tilt-sync-status');
+  btn.disabled = true;
+  btn.textContent = '↻ Sync en cours…';
+  status.textContent = 'Connexion à Tilt…';
+  try {
+    await fetchWithRetry(`${GAS}?endpoint=sync_tilt&query=all`);
+    status.style.color = '#00e5a0';
+    status.textContent = '✅ Sync OK — rechargement…';
+    await loadActivationsTilt();
+    status.style.color = 'var(--text-dim)';
+    status.textContent = ACTIVATIONS_TILT.length + ' activations synchronisées';
+  } catch(e) {
+    status.style.color = '#ff4060';
+    status.textContent = '❌ Erreur : ' + e.message.substring(0, 50);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↻ Sync Tilt maintenant';
+  }
+}
+
+async function loadActivationsTilt() {
+  try {
+    const data = await fetchWithRetry(`${GAS}?endpoint=activations_tilt&query=all`);
+    const raw  = data?.activations || [];
+    ACTIVATIONS_TILT = raw
+      .filter(a => a.start_time && a.status === 'DONE')
+      .map(a => {
+        const tsStart = new Date(a.start_time);
+        // Convertir UTC → heure locale Paris (+1 ou +2)
+        const offset  = 2; // CEST mai-oct, à ajuster si besoin
+        const local   = new Date(tsStart.getTime() + offset * 3600 * 1000);
+        const date    = local.toISOString().slice(0, 10);
+        const heure   = local.toISOString().slice(11, 16);
+        const dd      = String(local.getDate()).padStart(2,'0');
+        const mm      = String(local.getMonth()+1).padStart(2,'0');
+        const hh      = heure.replace(':','h');
+        return {
+          date,
+          heure,
+          duree_min: a.duree_min || 15,
+          label:     `${dd}/${mm} ${hh}`,
+          volume:    a.volume,
+          status:    a.status,
+          nb_sites:  a.nb_sites
+        };
+      });
+    console.log('Tilt activations chargées:', ACTIVATIONS_TILT.length);
+
+    // Mettre à jour le compteur dans le header
+    const el = document.getElementById('tilt-count');
+    if (el) el.textContent = ACTIVATIONS_TILT.length;
+
+  } catch(e) {
+    console.warn('Impossible de charger les activations Tilt:', e.message);
+    // Garder la liste vide — les bandeaux n'apparaîtront pas
+  }
+}
+
 let token = null;
 let chartPrix = null, chartVol = null, chartSplit = null, chartBids = null, chartProcured = null;
 
@@ -623,7 +678,7 @@ document.getElementById('date-start').value = d14.toISOString().slice(0,10);
 document.getElementById('date-end').value = today.toISOString().slice(0,10);
 
 // ─── JSONP (contourne CORS sans proxy) ─────────────────────
-const GAS = 'https://script.google.com/macros/s/AKfycbzesJQqos-s_48e4r4p79P1hYxO_arsIo2SqetUa58DOVkDE10qklJ4cHpzY2GHj9IGRQ/exec';
+const GAS = 'https://script.google.com/macros/s/AKfycbxkfNbmNbBiokDeeovNU0sKNwWt-Z87WvwTIxQEFJn3AJZ6-azmh0-N7g3Z-wvu/exec';
 
 function jsonp(url) {
   return new Promise((resolve, reject) => {
@@ -673,6 +728,11 @@ async function fetchImbalance(startDate, endDate) {
   return fetchWithRetry(url);
 }
 
+async function fetchActivationsStored() {
+  const url = `${GAS}?endpoint=activations_stored`;
+  return fetchWithRetry(url);
+}
+
 async function fetchMari(startDate, endDate) {
   const q = encodeURIComponent(`start_date=${startDate}&end_date=${endDate}`).replace(/%2B/g, '%2B');
   const url = `${GAS}?endpoint=standard_mfrr_data&query=${q}`;
@@ -698,6 +758,8 @@ async function fetchProcured(startDate, endDate) {
 
 // ─── MAIN ──────────────────────────────────────────────────
 async function fetchAll() {
+  // Charger les activations Tilt depuis la Sheet en premier
+  await loadActivationsTilt();
   const clientId = document.getElementById('client-id').value.trim();
   const clientSecret = document.getElementById('client-secret').value.trim();
   const dateStart = document.getElementById('date-start').value;

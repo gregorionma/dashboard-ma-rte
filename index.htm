@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr"><head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<html lang="fr">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Mécanisme d'Ajustement — RTE</title>
-<script src="index_files/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
 
@@ -399,7 +399,7 @@
 <header>
   <img src="data:image/jpeg;base64,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" style="height:48px;width:48px;object-fit:contain;border-radius:4px;">
   <h1>Mécanisme d'Ajustement — Suivi Équilibrage</h1>
-  <span class="subtitle" id="last-update">Màj : 09:44:40</span>
+  <span class="subtitle" id="last-update">—</span>
 </header>
 
 <!-- SETUP -->
@@ -416,11 +416,11 @@
     </div>
     <div class="field">
       <label>Date début</label>
-      <input type="date" id="date-start" value="2026-06-02">
+      <input type="date" id="date-start">
     </div>
     <div class="field">
       <label>Date fin</label>
-      <input type="date" id="date-end" value="2026-06-03">
+      <input type="date" id="date-end">
     </div>
     <button class="btn-fetch" id="btn-fetch" onclick="fetchAll()">▶ Charger</button>
   </div>
@@ -440,7 +440,7 @@
       <select id="refresh-interval" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:2px;">
         <option value="0">OFF</option>
         <option value="5">5 min</option>
-        <option value="15" selected="selected">15 min</option>
+        <option value="15" selected>15 min</option>
         <option value="30">30 min</option>
       </select>
     </div>
@@ -457,33 +457,36 @@
 </div>
 
 <!-- STATUS -->
-<div class="status-bar ok" id="status"><span class="dot "></span><span>Données chargées — 2026-06-02 → 2026-06-03</span></div>
+<div class="status-bar" id="status">
+  <span class="dot"></span>
+  <span>En attente — renseigne tes identifiants API et une plage de dates</span>
+</div>
 
 <!-- KPIs -->
 <div class="kpi-strip">
   <div class="kpi" style="--kpi-color: var(--red)">
     <div class="kpi-label">PRE min</div>
-    <div class="kpi-value" id="kpi-pre-min" style="color: var(--red);">-409</div>
+    <div class="kpi-value" id="kpi-pre-min">—</div>
     <div class="kpi-unit">€/MWh</div>
   </div>
   <div class="kpi" style="--kpi-color: var(--green)">
     <div class="kpi-label">PRE max</div>
-    <div class="kpi-value" id="kpi-pre-max" style="color: var(--green);">426</div>
+    <div class="kpi-value" id="kpi-pre-max">—</div>
     <div class="kpi-unit">€/MWh</div>
   </div>
   <div class="kpi" style="--kpi-color: var(--accent)">
     <div class="kpi-label">PMP moyen ↓</div>
-    <div class="kpi-value" id="kpi-pmp-down">-50</div>
+    <div class="kpi-value" id="kpi-pmp-down">—</div>
     <div class="kpi-unit">€/MWh (baisse)</div>
   </div>
   <div class="kpi" style="--kpi-color: var(--yellow)">
     <div class="kpi-label">Vol. activé ↓</div>
-    <div class="kpi-value" id="kpi-vol-down">6816</div>
+    <div class="kpi-value" id="kpi-vol-down">—</div>
     <div class="kpi-unit">MWh total</div>
   </div>
   <div class="kpi" style="--kpi-color: var(--accent2)">
     <div class="kpi-label">Sessions MA ↓</div>
-    <div class="kpi-value" id="kpi-sessions">96</div>
+    <div class="kpi-value" id="kpi-sessions">—</div>
     <div class="kpi-unit">créneaux activés</div>
   </div>
   <div class="kpi" style="--kpi-color: var(--accent3)">
@@ -520,8 +523,8 @@
       <span style="color:var(--text-dim);font-size:9px;margin-left:auto;">⚠ Merit order non garanti · MARI lancé 11/05</span>
     </div>
     <div class="chart-canvas-wrap" id="chart-prix-wrap">
-      <div class="placeholder" id="placeholder-prix" style="display: none;">Aucune donnée chargée</div>
-      <canvas id="chart-prix" style="display: block; box-sizing: border-box; height: 200px; width: 1942px;" width="2428" height="250"></canvas>
+      <div class="placeholder" id="placeholder-prix">Aucune donnée chargée</div>
+      <canvas id="chart-prix" style="display:none"></canvas>
     </div>
   </div>
 
@@ -531,8 +534,8 @@
       <span class="chart-badge" style="background:rgba(255,64,96,0.1);color:var(--red)">MWh</span>
     </div>
     <div class="chart-canvas-wrap" id="chart-vol-wrap">
-      <div class="placeholder" id="placeholder-vol" style="display: none;">Aucune donnée chargée</div>
-      <canvas id="chart-vol" style="display: block; box-sizing: border-box; height: 200px; width: 1942px;" width="2428" height="250"></canvas>
+      <div class="placeholder" id="placeholder-vol">Aucune donnée chargée</div>
+      <canvas id="chart-vol" style="display:none"></canvas>
     </div>
   </div>
 
@@ -540,7 +543,7 @@
     <div style="display:flex;gap:32px;align-items:center;width:100%;justify-content:center;flex-wrap:wrap;">
       <div style="text-align:center;">
         <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Activations Tilt</div>
-        <div id="tilt-count" style="font-family:'IBM Plex Mono',monospace;font-size:28px;color:var(--accent);font-weight:700;">130</div>
+        <div id="tilt-count" style="font-family:'IBM Plex Mono',monospace;font-size:28px;color:var(--accent);font-weight:700;">—</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:4px;">chargées</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
@@ -554,7 +557,7 @@
 
   <div class="chart-card full-width">
     <div class="chart-header">
-      <span class="chart-title">Déséquilibre prévisionnel &amp; Marges RTE (MW)</span>
+      <span class="chart-title">Déséquilibre prévisionnel & Marges RTE (MW)</span>
       <span class="chart-badge" style="background:rgba(255,192,64,0.1);color:var(--yellow)">MW · temps réel</span>
     </div>
     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;">
@@ -564,835 +567,22 @@
       <span style="color:var(--text-dim);font-size:9px;margin-left:auto;">Négatif = excédent → favorable aux activations baisse</span>
     </div>
     <div class="chart-canvas-wrap" id="chart-imbalance-wrap">
-      <div class="placeholder" id="placeholder-imbalance" style="display: none;">Aucune donnée chargée</div>
-      <canvas id="chart-imbalance" style="display: block; box-sizing: border-box; height: 200px; width: 2006px;" width="2508" height="250"></canvas>
+      <div class="placeholder" id="placeholder-imbalance">Aucune donnée chargée</div>
+      <canvas id="chart-imbalance" style="display:none"></canvas>
     </div>
   </div>
 
 <!-- ANALYSE CROISÉE -->
 <div class="analysis-section">
   <div class="section-title">Analyse croisée — Créneaux avec MA à la baisse détecté</div>
-  <div id="table-wrap"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.08em;display:flex;gap:20px;flex-wrap:wrap;">
-    <span>100 créneaux sur la période</span>
-    <span style="color:#ff8c00">🟠 1 mFRR activé (PMP mFRR &lt; −145)</span>
-    <span style="color:#a78bfa">🟣 15 MARI &lt; −100 €/MWh</span>
-    <span style="color:rgba(255,140,0,0.5);font-size:9px;">⚠ RTE peut ne pas respecter le merit order</span>
+  <div id="table-wrap">
+    <div class="placeholder">Aucune donnée — les créneaux où PRE &lt; −50 €/MWh et volume MA &gt; 0 MWh seront listés ici</div>
   </div>
-  <table>
-    <thead><tr>
-      <th>Horodatage</th>
-      <th>PRE (€/MWh)</th>
-      <th>PMP mFRR ↓</th>
-      <th>Vol mFRR ↓ (MWh)</th>
-      <th>Vol aFRR ↓ (MWh)</th>
-      <th>MARI clearing</th>
-      <th>Signal</th>
-    </tr></thead><tbody><tr style="background:rgba(167,139,250,0.05)">
-      <td>03/06/2026 09:15:00</td>
-      <td class="price-pos">40.1</td>
-      <td class="">115.3</td>
-      <td>42.8</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -168.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr>
-      <td>03/06/2026 09:00:00</td>
-      <td class="price-pos">35.7</td>
-      <td class="">115.3</td>
-      <td>31.8</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">2.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr style="background:rgba(255,140,0,0.05)">
-      <td>03/06/2026 08:45:00</td>
-      <td class="price-neg">-72.5</td>
-      <td class="price-neg">-147.8</td>
-      <td>3.1</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -147.8</span></td>
-      <td><span class="tag-oui">🟠 mFRR ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>03/06/2026 08:30:00</td>
-      <td class="price-neg">-22.5</td>
-      <td class="">-14.9</td>
-      <td>22.7</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -131.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr>
-      <td>03/06/2026 08:15:00</td>
-      <td class="price-neg">-37.1</td>
-      <td class="">-6.3</td>
-      <td>15.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">112.2</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>03/06/2026 07:45:00</td>
-      <td class="price-neg">-290.4</td>
-      <td class="">-106.9</td>
-      <td>—</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -106.9</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr>
-      <td>03/06/2026 07:30:00</td>
-      <td class="price-neg">-288.8</td>
-      <td class="">—</td>
-      <td>—</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">20.0</span></td>
-      <td><span class="tag-non">—</span></td>
-    </tr><tr>
-      <td>03/06/2026 07:15:00</td>
-      <td class="price-neg">-320.9</td>
-      <td class="">—</td>
-      <td>—</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">146.8</span></td>
-      <td><span class="tag-non">—</span></td>
-    </tr><tr>
-      <td>03/06/2026 07:00:00</td>
-      <td class="price-neg">-318.7</td>
-      <td class="">—</td>
-      <td>1.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">148.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 06:45:00</td>
-      <td class="price-pos">17.5</td>
-      <td class="">—</td>
-      <td>13.2</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">88.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 06:30:00</td>
-      <td class="price-pos">36.0</td>
-      <td class="">—</td>
-      <td>13.2</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">145.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 06:15:00</td>
-      <td class="price-pos">47.2</td>
-      <td class="">—</td>
-      <td>13.2</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">136.5</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 06:00:00</td>
-      <td class="price-pos">27.2</td>
-      <td class="">—</td>
-      <td>15.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">121.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 05:45:00</td>
-      <td class="price-pos">49.5</td>
-      <td class="">—</td>
-      <td>45.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">96.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 05:30:00</td>
-      <td class="price-neg">-21.5</td>
-      <td class="">—</td>
-      <td>70.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">134.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 05:15:00</td>
-      <td class="price-pos">94.8</td>
-      <td class="">—</td>
-      <td>70.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">132.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 05:00:00</td>
-      <td class="price-pos">98.6</td>
-      <td class="">—</td>
-      <td>70.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">133.4</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 04:45:00</td>
-      <td class="price-neg">-21.3</td>
-      <td class="">—</td>
-      <td>70.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">130.5</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 04:30:00</td>
-      <td class="price-neg">-49.2</td>
-      <td class="price-neg">-172.0</td>
-      <td>83.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">124.1</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 04:15:00</td>
-      <td class="price-neg">-74.2</td>
-      <td class="price-neg">-150.5</td>
-      <td>141.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">117.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 04:00:00</td>
-      <td class="price-neg">-74.0</td>
-      <td class="price-neg">-149.9</td>
-      <td>142.4</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">123.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 03:45:00</td>
-      <td class="price-neg">-74.2</td>
-      <td class="price-neg">-148.9</td>
-      <td>144.7</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">132.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 03:30:00</td>
-      <td class="price-neg">-74.1</td>
-      <td class="price-neg">-148.6</td>
-      <td>145.4</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">133.4</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 03:15:00</td>
-      <td class="price-neg">-74.6</td>
-      <td class="price-neg">-148.4</td>
-      <td>145.0</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">133.4</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 03:00:00</td>
-      <td class="price-neg">-80.4</td>
-      <td class="price-neg">-148.3</td>
-      <td>117.9</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">132.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 02:45:00</td>
-      <td class="price-neg">-84.2</td>
-      <td class="price-neg">-148.3</td>
-      <td>97.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">134.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 02:30:00</td>
-      <td class="price-neg">-77.7</td>
-      <td class="price-neg">-146.6</td>
-      <td>95.9</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">134.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 02:15:00</td>
-      <td class="price-neg">-102.9</td>
-      <td class="">-32.6</td>
-      <td>51.9</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">134.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 02:00:00</td>
-      <td class="price-neg">-293.3</td>
-      <td class="">—</td>
-      <td>15.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">136.1</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 01:45:00</td>
-      <td class="price-neg">-137.2</td>
-      <td class="">-10.9</td>
-      <td>35.7</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">136.6</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 01:30:00</td>
-      <td class="price-pos">0.5</td>
-      <td class="">-10.9</td>
-      <td>67.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">136.5</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 01:15:00</td>
-      <td class="price-neg">-2.4</td>
-      <td class="">-10.9</td>
-      <td>75.7</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">132.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 01:00:00</td>
-      <td class="price-neg">-11.3</td>
-      <td class="">—</td>
-      <td>59.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">134.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 00:45:00</td>
-      <td class="price-neg">-183.9</td>
-      <td class="">—</td>
-      <td>51.4</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">136.6</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 00:30:00</td>
-      <td class="price-neg">-60.0</td>
-      <td class="">—</td>
-      <td>51.4</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">137.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 00:15:00</td>
-      <td class="price-neg">-1.0</td>
-      <td class="">-7.9</td>
-      <td>82.9</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">137.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>03/06/2026 00:00:00</td>
-      <td class="price-neg">-123.8</td>
-      <td class="">-7.9</td>
-      <td>62.9</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">148.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 23:45:00</td>
-      <td class="price-neg">-9.3</td>
-      <td class="">12.8</td>
-      <td>92.5</td>
-      <td>—</td>
-      <td>—</td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 23:30:00</td>
-      <td class="price-pos">15.3</td>
-      <td class="">12.8</td>
-      <td>92.5</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">135.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 23:15:00</td>
-      <td class="price-pos">5.2</td>
-      <td class="">12.8</td>
-      <td>89.0</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">140.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 23:00:00</td>
-      <td class="price-pos">14.0</td>
-      <td class="">12.8</td>
-      <td>89.0</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">142.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 22:45:00</td>
-      <td class="price-pos">11.0</td>
-      <td class="">12.8</td>
-      <td>94.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">140.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 22:30:00</td>
-      <td class="price-pos">14.8</td>
-      <td class="">12.8</td>
-      <td>94.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">135.9</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 22:15:00</td>
-      <td class="price-pos">16.5</td>
-      <td class="">12.7</td>
-      <td>67.2</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">144.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 22:00:00</td>
-      <td class="price-pos">15.7</td>
-      <td class="">12.7</td>
-      <td>67.2</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">155.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 21:45:00</td>
-      <td class="price-neg">-25.3</td>
-      <td class="">-100.3</td>
-      <td>68.8</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">195.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 21:30:00</td>
-      <td class="price-neg">-69.1</td>
-      <td class="">-140.4</td>
-      <td>140.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">155.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 21:15:00</td>
-      <td class="price-neg">-69.3</td>
-      <td class="">-140.3</td>
-      <td>142.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">145.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 21:00:00</td>
-      <td class="price-neg">-66.6</td>
-      <td class="">-128.0</td>
-      <td>151.8</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">135.9</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 20:45:00</td>
-      <td class="price-neg">-229.1</td>
-      <td class="">-140.0</td>
-      <td>119.0</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -340.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 20:30:00</td>
-      <td class="price-neg">-327.5</td>
-      <td class="">-103.0</td>
-      <td>60.3</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -340.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr>
-      <td>02/06/2026 20:15:00</td>
-      <td class="price-neg">-326.6</td>
-      <td class="">10.0</td>
-      <td>51.9</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">155.3</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 20:00:00</td>
-      <td class="price-neg">-216.2</td>
-      <td class="">—</td>
-      <td>69.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">145.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 19:45:00</td>
-      <td class="price-pos">26.6</td>
-      <td class="">4.4</td>
-      <td>114.0</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">145.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 19:30:00</td>
-      <td class="price-pos">2.8</td>
-      <td class="">4.4</td>
-      <td>115.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">142.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 19:15:00</td>
-      <td class="price-pos">22.4</td>
-      <td class="">—</td>
-      <td>27.7</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">121.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 19:00:00</td>
-      <td class="price-pos">31.1</td>
-      <td class="">—</td>
-      <td>27.7</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">114.7</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 18:45:00</td>
-      <td class="price-neg">-21.6</td>
-      <td class="">-91.4</td>
-      <td>29.0</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">112.7</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 18:30:00</td>
-      <td class="price-neg">-67.7</td>
-      <td class="">-108.4</td>
-      <td>90.7</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">112.7</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 18:15:00</td>
-      <td class="price-neg">-83.2</td>
-      <td class="">-108.6</td>
-      <td>93.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">118.4</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 18:00:00</td>
-      <td class="price-neg">-230.8</td>
-      <td class="">-144.3</td>
-      <td>94.1</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -340.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr>
-      <td>02/06/2026 17:45:00</td>
-      <td class="price-pos">3.7</td>
-      <td class="">33.6</td>
-      <td>63.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">108.6</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 17:30:00</td>
-      <td class="price-neg">-31.9</td>
-      <td class="">33.6</td>
-      <td>59.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">100.1</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 17:15:00</td>
-      <td class="price-neg">-315.7</td>
-      <td class="">33.6</td>
-      <td>10.0</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">105.4</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 17:00:00</td>
-      <td class="price-neg">-267.0</td>
-      <td class="">-144.0</td>
-      <td>16.6</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -340.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 16:45:00</td>
-      <td class="price-neg">-157.3</td>
-      <td class="">-127.4</td>
-      <td>24.0</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -340.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 16:30:00</td>
-      <td class="price-neg">-104.9</td>
-      <td class="">-128.2</td>
-      <td>26.0</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -340.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 16:15:00</td>
-      <td class="price-neg">-35.4</td>
-      <td class="">-30.9</td>
-      <td>38.8</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -148.8</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 16:00:00</td>
-      <td class="price-neg">-39.0</td>
-      <td class="">-30.9</td>
-      <td>38.8</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -164.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 15:45:00</td>
-      <td class="price-neg">-53.6</td>
-      <td class="">-53.6</td>
-      <td>22.8</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -148.8</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 15:30:00</td>
-      <td class="price-neg">-39.3</td>
-      <td class="">-25.4</td>
-      <td>42.8</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -164.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr style="background:rgba(167,139,250,0.05)">
-      <td>02/06/2026 15:00:00</td>
-      <td class="price-neg">-138.7</td>
-      <td class="price-neg">-169.0</td>
-      <td>—</td>
-      <td>—</td>
-      <td><span style="color:#a78bfa">🟣 -169.0</span></td>
-      <td><span class="tag-oui" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa">🟣 MARI ACTIVÉ</span></td>
-    </tr><tr>
-      <td>02/06/2026 13:45:00</td>
-      <td class="price-neg">-41.9</td>
-      <td class="">-69.3</td>
-      <td>22.8</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">-0.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 13:30:00</td>
-      <td class="price-neg">-54.0</td>
-      <td class="">-69.4</td>
-      <td>22.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">0.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 13:15:00</td>
-      <td class="price-neg">-49.1</td>
-      <td class="">-68.7</td>
-      <td>21.9</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">0.2</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 13:00:00</td>
-      <td class="price-neg">-48.9</td>
-      <td class="">-76.9</td>
-      <td>20.3</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">26.1</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 12:45:00</td>
-      <td class="price-pos">42.3</td>
-      <td class="">-101.9</td>
-      <td>74.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">5.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 12:30:00</td>
-      <td class="price-neg">-81.8</td>
-      <td class="">-101.4</td>
-      <td>74.4</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">-0.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 12:15:00</td>
-      <td class="price-pos">45.6</td>
-      <td class="">-101.0</td>
-      <td>71.5</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">-0.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 12:00:00</td>
-      <td class="price-neg">-69.8</td>
-      <td class="">-101.0</td>
-      <td>70.6</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">-0.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 11:45:00</td>
-      <td class="price-neg">-68.7</td>
-      <td class="">-94.2</td>
-      <td>69.8</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">0.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 11:30:00</td>
-      <td class="price-neg">-67.0</td>
-      <td class="">-94.1</td>
-      <td>68.5</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">-0.1</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 11:15:00</td>
-      <td class="price-neg">-50.6</td>
-      <td class="">-85.3</td>
-      <td>38.0</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">0.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 11:00:00</td>
-      <td class="price-neg">-198.6</td>
-      <td class="">14.0</td>
-      <td>4.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">0.5</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 09:45:00</td>
-      <td class="price-pos">55.9</td>
-      <td class="">14.0</td>
-      <td>4.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">135.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 09:30:00</td>
-      <td class="price-pos">175.3</td>
-      <td class="">14.0</td>
-      <td>4.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">112.7</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 09:15:00</td>
-      <td class="price-pos">154.9</td>
-      <td class="">14.0</td>
-      <td>4.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">114.1</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 09:00:00</td>
-      <td class="price-pos">92.1</td>
-      <td class="">14.0</td>
-      <td>4.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">114.7</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 08:45:00</td>
-      <td class="price-pos">39.2</td>
-      <td class="">14.0</td>
-      <td>4.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">135.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 08:30:00</td>
-      <td class="price-pos">37.2</td>
-      <td class="">21.2</td>
-      <td>4.4</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">130.1</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 08:15:00</td>
-      <td class="price-pos">29.3</td>
-      <td class="">29.6</td>
-      <td>55.0</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">119.4</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 08:00:00</td>
-      <td class="price-pos">28.8</td>
-      <td class="">27.0</td>
-      <td>65.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">143.9</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 07:45:00</td>
-      <td class="price-pos">44.6</td>
-      <td class="">39.0</td>
-      <td>85.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">113.4</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 07:30:00</td>
-      <td class="price-pos">44.9</td>
-      <td class="">39.0</td>
-      <td>85.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">114.1</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 07:15:00</td>
-      <td class="price-pos">33.6</td>
-      <td class="">29.4</td>
-      <td>116.5</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">116.7</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 07:00:00</td>
-      <td class="price-pos">37.2</td>
-      <td class="">35.0</td>
-      <td>95.8</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">142.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 06:45:00</td>
-      <td class="price-neg">-218.7</td>
-      <td class="">78.1</td>
-      <td>27.9</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">145.8</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 06:30:00</td>
-      <td class="price-neg">-288.4</td>
-      <td class="">114.5</td>
-      <td>13.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">142.0</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 06:15:00</td>
-      <td class="price-neg">-287.4</td>
-      <td class="">114.5</td>
-      <td>13.1</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">120.6</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr><tr>
-      <td>02/06/2026 06:00:00</td>
-      <td class="price-neg">-409.3</td>
-      <td class="">92.3</td>
-      <td>16.8</td>
-      <td>—</td>
-      <td><span style="color:var(--text-dim)">114.7</span></td>
-      <td><span class="tag-oui">mFRR ↓</span></td>
-    </tr></tbody></table></div>
 </div>
 
 <footer>
   <span>Source : API Balancing Energy — data.rte-france.com · Données publiques</span>
-  <span id="footer-range">Période : 2026-06-02 → 2026-06-03</span>
+  <span id="footer-range">—</span>
 </footer>
 
 <script>
@@ -2281,6 +1471,5 @@ window.addEventListener('load', () => {
   );
 });
 </script>
-
-
-</body></html>
+</body>
+</html>
